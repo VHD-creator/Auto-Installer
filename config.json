@@ -1,0 +1,58 @@
+{
+    "apps": [
+        {
+            "name": "WinRAR",
+            "exe": "3winrar.exe",
+            "type": "install",
+            "icon": "winrar.png"
+        },
+        {
+            "name": "Google Chrome",
+            "exe": "ChromeSetup.exe",
+            "type": "install",
+            "icon": "chrome.png"
+        },
+        {
+            "name": "Foxit PDF Reader",
+            "exe": "FoxitPDFReader_x64.exe",
+            "type": "install",
+            "icon": "foxit.png"
+        },
+        {
+            "name": "Microsoft Office 2019",
+            "exe": "Office2019ProPlus.exe",
+            "type": "install",
+            "icon": "office.png"
+        },
+        {
+            "name": "Office 365",
+            "exe": "setup.exe",
+            "type": "install",
+            "icon": "office365.png"
+        },
+        {
+            "name": "UltraViewer",
+            "exe": "UltraViewer.exe",
+            "type": "install",
+            "icon": "ultraviewer.png"
+        },
+        {
+            "name": "UniKey",
+            "exe": "UniKeyNT.exe",
+            "type": "copy",
+            "icon": "unikey.png"
+        },
+        {
+            "name": "Capcut",
+            "exe": "CapCut_7562815338254106641_installer.exe",
+            "type": "install",
+            "icon": "capcut.png"
+        },
+        {
+            "name": "Canva",
+            "exe": "CanvaSetup_1.115.0.exe",
+            "type": "install",
+            "icon": "canva.png"
+        }
+    ]
+}
