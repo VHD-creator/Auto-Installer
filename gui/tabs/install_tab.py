@@ -68,7 +68,7 @@ class InstallTab(ctk.CTkFrame):
         self.progress.set(0)
 
         # Khung Log dạng bảng (Không Header)
-        self.log_container = ctk.CTkFrame(self.bottom_frame)
+        self.log_container = ctk.CTkFrame(self.bottom_frame, fg_color=("#f5f5f5", "#151515"), corner_radius=8)
         self.log_container.pack(fill="both", expand=True, padx=5, pady=5)
 
         self.log_scroll_frame = ctk.CTkScrollableFrame(self.log_container, fg_color="transparent", corner_radius=0)
@@ -82,41 +82,38 @@ class InstallTab(ctk.CTkFrame):
         self.log_row_count = 0
 
         if self.load_app_list():
-            self.log("[INFO] Đã tải danh sách ứng dụng từ config.json thành công.")
+            self.log({"status": "INFO", "msg": "Đã tải danh sách ứng dụng từ config.json thành công."})
 
     def log(self, msg):
         self.after(0, lambda: self._log(msg))
 
-    def _log(self, msg):
+    def _log(self, data):
         timestamp = time.strftime("[%H:%M:%S]")
         status = "INFO"
-        status_color = Styles.TEXT_SECONDARY
-        content = msg
-        
-        # Xử lý các loại log đặc biệt
-        if msg.startswith("[SUCCESS]"):
-            status = "SUCCESS"
-            status_color = Styles.COLOR_SUCCESS
-            content = msg.replace("[SUCCESS]", "").strip()
-        elif msg.startswith("[ERROR]"):
-            status = "ERROR"
-            status_color = Styles.COLOR_ERROR
-            content = msg.replace("[ERROR]", "").strip()
-        elif msg.startswith("[INSTALL]"):
-            status = "INSTALL"
-            status_color = Styles.COLOR_PRIMARY
-            content = msg.replace("[INSTALL]", "").strip()
-        elif msg.startswith("[INFO]"):
-            status = "INFO"
-            content = msg.replace("[INFO]", "").strip()
-        elif msg.startswith("SUMMARY:"):
-            status = "SUMMARY"
-            status_color = Styles.COLOR_SUCCESS
-            parts = msg.replace("SUMMARY:", "").split("/")
-            content = f"Hoàn thành: {parts[0]}/{parts[1]} ứng dụng"
-        elif msg == "Trình cài đặt đã đóng...":
-            status = "DONE"
-            status_color = Styles.COLOR_WARNING
+        status_color = Styles.TEXT_SECONDARY # Mặc định cho INFO
+        content = ""
+
+        # Nếu dữ liệu là Dictionary (Xử lý trực tiếp)
+        if isinstance(data, dict):
+            status = data.get("status", "INFO")
+            content = data.get("msg", "")
+            
+            if status == "SUCCESS" or status == "SUMMARY":
+                status_color = Styles.COLOR_SUCCESS
+                if status == "SUMMARY":
+                    content = f"Hoàn thành: {data.get('success', 0)}/{data.get('total', 0)} ứng dụng"
+            elif status == "ERROR":
+                status_color = Styles.COLOR_ERROR
+            elif status == "INSTALL":
+                status_color = Styles.COLOR_PRIMARY
+            elif status == "DONE" or status == "ABORTED":
+                status_color = Styles.COLOR_WARNING
+            elif status == "INFO":
+                status_color = Styles.COLOR_PRIMARY # Cho INFO nổi bật hơn một chút
+                
+        # Nếu dữ liệu là String (Các log đơn giản không màu)
+        else:
+            content = data
             
         # Tạo row frame (Cố định layout)
         row_frame = ctk.CTkFrame(self.log_scroll_frame, fg_color="transparent", corner_radius=0, height=28)
@@ -201,7 +198,7 @@ class InstallTab(ctk.CTkFrame):
             self.update_select_all_btn()
             return True
         except Exception as e:
-            self.log(f"[ERROR] Lỗi nạp cấu hình: {e}")
+            self.log({"status": "ERROR", "msg": f"Lỗi nạp cấu hình: {e}"})
             return False
 
     def toggle_chip(self, var, btn):
