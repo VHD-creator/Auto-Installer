@@ -189,18 +189,34 @@ class EditTab(ctk.CTkFrame):
             with open(config_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
-            for item in data.get("apps", []):
-                if item.get("name") in checked_to_del:
-                    exe_name = item.get("exe")
-                    if exe_name:
-                        file_to_del = os.path.join(installers_dir, exe_name)
-                        if os.path.exists(file_to_del):
-                            try:
-                                os.remove(file_to_del)
-                            except:
-                                pass
+            apps_to_del = [item for item in data.get("apps", []) if item.get("name") in checked_to_del]
+            remaining_apps = [item for item in data.get("apps", []) if item.get("name") not in checked_to_del]
+            
+            # Thu thập các icon chuẩn bị xóa
+            icons_to_potential_del = [app.get("icon") for app in apps_to_del if app.get("icon")]
+            # Danh sách các icon vẫn đang được sử dụng
+            icons_still_in_use = [app.get("icon") for app in remaining_apps if app.get("icon")]
 
-            data["apps"] = [item for item in data.get("apps", []) if item.get("name") not in checked_to_del]
+            for item in apps_to_del:
+                # 1. Xóa file EXE/Installer
+                exe_name = item.get("exe")
+                if exe_name:
+                    file_to_del = os.path.join(installers_dir, exe_name)
+                    if os.path.exists(file_to_del):
+                        try:
+                            os.remove(file_to_del)
+                        except: pass
+                
+                # 2. Xóa file Icon nếu không còn app nào khác dùng
+                icon_name = item.get("icon")
+                if icon_name and icon_name not in icons_still_in_use:
+                    icon_path = os.path.join(base_path, "gui", "assets", "apps", icon_name)
+                    if os.path.exists(icon_path):
+                        try:
+                            os.remove(icon_path)
+                        except: pass
+
+            data["apps"] = remaining_apps
 
             with open(config_path, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=4)

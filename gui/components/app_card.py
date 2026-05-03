@@ -39,10 +39,15 @@ class AppCard(ctk.CTkFrame):
         self.icon_label.place(relx=0.5, rely=0.5, anchor="center")
         
         # 2. Text area (Middle)
-        self.name_label = ctk.CTkLabel(self, text=name, font=Styles.FONT_LABEL_BOLD, text_color=self.text_primary)
+        self.name_label = ctk.CTkLabel(self, text=name, font=Styles.FONT_LABEL_BOLD, text_color=self.text_primary, anchor="w")
         self.name_label.grid(row=0, column=1, sticky="sw", padx=(0, 10), pady=(15, 0))
         
-        self.desc_label = ctk.CTkLabel(self, text=description, font=Styles.FONT_DESC, text_color=self.text_secondary)
+        self.full_description = description
+        self.scrolling = False
+        self.marquee_offset = 0
+        self.marquee_speed = 150 # milliseconds
+        
+        self.desc_label = ctk.CTkLabel(self, text=description, font=Styles.FONT_DESC, text_color=self.text_secondary, anchor="w")
         self.desc_label.grid(row=1, column=1, sticky="nw", padx=(0, 10), pady=(2, 15))
         
         # 3. Selection Indicator (Right)
@@ -56,8 +61,9 @@ class AppCard(ctk.CTkFrame):
             widget.bind("<Button-1>", self._on_click)
             
         # Hover effects
-        self.bind("<Enter>", self._on_enter)
-        self.bind("<Leave>", self._on_leave)
+        for widget in [self, self.name_label, self.desc_label, self.icon_frame, self.icon_label, self.indicator]:
+            widget.bind("<Enter>", self._on_enter)
+            widget.bind("<Leave>", self._on_leave)
 
     def _on_click(self, event=None):
         self.toggle_selection()
@@ -67,10 +73,54 @@ class AppCard(ctk.CTkFrame):
     def _on_enter(self, event=None):
         if not self.selected:
             self.configure(border_color=("#afb8c1", "#484f58"), fg_color=self.color_hover)
+        
+        if self.scrolling:
+            return
+            
+        # Bắt đầu hiệu ứng chữ chạy nếu text dài (ví dụ > 25 ký tự)
+        if len(self.full_description) > 25:
+            self.scrolling = True
+            self._animate_marquee()
 
     def _on_leave(self, event=None):
+        # Kiểm tra xem chuột có thực sự rời khỏi toàn bộ AppCard không
+        x, y = self.winfo_pointerxy()
+        target = self.winfo_containing(x, y)
+        
+        # Nếu vẫn đang ở trong AppCard hoặc các widget con thì không dừng
+        is_inside = False
+        if target == self:
+            is_inside = True
+        else:
+            curr = target
+            while curr:
+                if curr == self:
+                    is_inside = True
+                    break
+                curr = curr.master if hasattr(curr, 'master') else None
+        
+        if is_inside:
+            return
+
         if not self.selected:
             self.configure(border_color=self.color_border, fg_color=self.color_bg)
+            
+        # Dừng hiệu ứng và reset text
+        self.scrolling = False
+        self.marquee_offset = 0
+        self.desc_label.configure(text=self.full_description)
+
+    def _animate_marquee(self):
+        if not self.scrolling:
+            return
+            
+        padded_text = self.full_description + "       "
+        # Chạy từ phải sang trái (chuẩn marquee) giúp dễ đọc hơn để xem phần bị ẩn bên phải
+        self.marquee_offset = (self.marquee_offset + 1) % len(padded_text)
+        new_text = padded_text[self.marquee_offset:] + padded_text[:self.marquee_offset]
+        
+        self.desc_label.configure(text=new_text)
+        self.after(self.marquee_speed, self._animate_marquee)
 
     def toggle_selection(self, state=None):
         if state is not None:

@@ -159,23 +159,11 @@ class InstallTab(ctk.CTkFrame):
             self.scroll_frame.grid_columnconfigure(0, weight=1, uniform="column")
             self.scroll_frame.grid_columnconfigure(1, weight=1, uniform="column")
 
-            # Từ điển mô tả tạm thời cho đẹp
-            descriptions = {
-                "WinRAR": "Phần mềm nén và giải nén file mạnh mẽ.",
-                "Google Chrome": "Trình duyệt web nhanh chóng, bảo mật.",
-                "Foxit PDF Reader": "Hỗ trợ đọc và chỉnh sửa file PDF.",
-                "Microsoft Office 2019": "Bộ ứng dụng văn phòng bản quyền.",
-                "Office 365": "Dịch vụ đám mây và ứng dụng Office.",
-                "UltraViewer": "Điều khiển máy tính từ xa dễ dàng.",
-                "UniKey": "Bộ gõ tiếng Việt phổ biến nhất.",
-                "Capcut": "Phần mềm chỉnh sửa video chuyên nghiệp.",
-                "Canva": "Thiết kế đồ họa online tiện lợi."
-            }
-
             for i, app in enumerate(apps):
                 name = app.get("name", "Unknown")
                 exe = app.get("exe", "")
-                icon_name = app.get("icon", "") # Lấy tên file icon từ config
+                icon_name = app.get("icon", "") 
+                description = app.get("description", f"Ứng dụng {name}")
                 
                 # Load icon thông qua AssetManager sử dụng tên file trong config
                 app_icon = AssetManager.get_app_icon(icon_name)
@@ -184,7 +172,7 @@ class InstallTab(ctk.CTkFrame):
                 card = AppCard(
                     self.scroll_frame, 
                     name=name, 
-                    description=descriptions.get(name, f"Ứng dụng {name}"), 
+                    description=description, 
                     app_icon=app_icon,
                     command=self.update_select_all_btn
                 )

@@ -4,7 +4,9 @@ import json
 import sys
 import customtkinter as ctk
 from tkinter import messagebox, filedialog
+from PIL import Image
 from gui.styles import Styles
+from core.asset_manager import AssetManager
 
 class EditOverlay(ctk.CTkFrame):
     def __init__(self, parent, idx=None, old_name="", old_exe="", on_success_callback=None, log_func=None):
@@ -15,6 +17,7 @@ class EditOverlay(ctk.CTkFrame):
         self.old_exe = old_exe
         self.on_success_callback = on_success_callback
         self.log_func = log_func if log_func else print
+        self.icon_deleted = False
         
         self.place(relx=0, rely=0, relwidth=1, relheight=1)
         
@@ -26,16 +29,85 @@ class EditOverlay(ctk.CTkFrame):
             border_width=2, 
             border_color=Styles.COLOR_PRIMARY
         )
-        center_frame.place(relx=0.5, rely=0.5, anchor="center", relwidth=0.8, relheight=0.45)
+        center_frame.place(relx=0.5, rely=0.5, anchor="center", relwidth=0.8, relheight=0.55)
 
         title_text = "Thêm mới ứng dụng" if idx is None else "Chỉnh sửa ứng dụng"
         lbl = ctk.CTkLabel(center_frame, text=title_text, font=Styles.FONT_TITLE_SMALL)
         lbl.pack(pady=(15, 5))
 
-        self.entry_rename = ctk.CTkEntry(center_frame, font=Styles.FONT_INFO, height=40, placeholder_text="Tên ứng dụng")
+        # Icon & Name Layout
+        icon_row = ctk.CTkFrame(center_frame, fg_color="transparent")
+        icon_row.pack(fill="x", padx=30, pady=(10, 5))
+        
+        # Load current data if editing
+        current_icon_img = None
+        old_desc = ""
+        if idx is not None:
+            base_path = os.path.dirname(os.path.realpath(sys.argv[0]))
+            config_path = os.path.join(base_path, "config.json")
+            try:
+                with open(config_path, "r", encoding="utf-8") as f:
+                    config_data = json.load(f)
+                    app_data = config_data["apps"][idx]
+                    icon_name = app_data.get("icon", "")
+                    old_desc = app_data.get("description", "")
+                    current_icon_img = AssetManager.get_app_icon(icon_name, size=(48, 48))
+            except: pass
+
+        self.icon_preview = ctk.CTkLabel(
+            icon_row, 
+            text="" if current_icon_img else "📦", 
+            image=current_icon_img,
+            font=(Styles.FONT_FAMILY_MAIN, 32), 
+            width=64, 
+            height=64, 
+            corner_radius=12, 
+            fg_color=("gray90", "gray20")
+        )
+        self.icon_preview.pack(side="left", padx=(0, 15))
+        
+        info_frame = ctk.CTkFrame(icon_row, fg_color="transparent")
+        info_frame.pack(side="left", fill="both", expand=True)
+
+        self.entry_rename = ctk.CTkEntry(info_frame, font=Styles.FONT_INFO, height=35, placeholder_text="Tên ứng dụng")
         if idx is not None:
             self.entry_rename.insert(0, old_name)
-        self.entry_rename.pack(fill="x", padx=30, pady=10)
+        self.entry_rename.pack(fill="x", pady=(0, 5))
+        
+        self.selected_icon_path = [None]
+        
+        btn_icon_row = ctk.CTkFrame(info_frame, fg_color="transparent")
+        btn_icon_row.pack(anchor="w", pady=(2, 0))
+
+        self.btn_pick_icon = ctk.CTkButton(
+            btn_icon_row, 
+            text="Chọn Icon (PNG/ICO)", 
+            height=24, 
+            font=Styles.FONT_DESC,
+            command=self.pick_icon,
+            fg_color=("gray80", "gray30"),
+            text_color=Styles.TEXT_PRIMARY
+        )
+        self.btn_pick_icon.pack(side="left", padx=(0, 5))
+
+        self.btn_remove_icon = ctk.CTkButton(
+            btn_icon_row, 
+            text="Xóa Icon", 
+            height=24, 
+            width=80,
+            font=Styles.FONT_DESC,
+            command=self.remove_icon,
+            fg_color=Styles.COLOR_ERROR,
+            hover_color=Styles.COLOR_ERROR_HOVER,
+            text_color="white"
+        )
+        self.btn_remove_icon.pack(side="left")
+
+        self.entry_desc = ctk.CTkEntry(center_frame, font=Styles.FONT_DESC, height=35, placeholder_text="Mô tả ngắn gọn về ứng dụng...")
+        if idx is not None:
+            self.entry_desc.insert(0, old_desc)
+        self.entry_desc.pack(fill="x", padx=30, pady=(5, 10))
+        
         self.entry_rename.focus()
         if idx is not None:
             self.entry_rename.select_range(0, "end")
@@ -99,8 +171,29 @@ class EditOverlay(ctk.CTkFrame):
             self.selected_file_path[0] = f_path
             self.exe_label.configure(text=f"File mới: {os.path.basename(f_path)}")
 
+    def pick_icon(self):
+        f_path = filedialog.askopenfilename(
+            title="Chọn Icon cho ứng dụng",
+            filetypes=[("Image Files", "*.png *.jpg *.jpeg *.ico"), ("All Files", "*.*")]
+        )
+        if f_path:
+            self.selected_icon_path[0] = f_path
+            self.icon_deleted = False
+            try:
+                pil_img = Image.open(f_path)
+                ctk_img = ctk.CTkImage(light_image=pil_img, dark_image=pil_img, size=(48, 48))
+                self.icon_preview.configure(image=ctk_img, text="")
+            except Exception as e:
+                messagebox.showerror("Lỗi", f"Không thể nạp icon: {e}")
+
+    def remove_icon(self):
+        self.selected_icon_path[0] = None
+        self.icon_deleted = True
+        self.icon_preview.configure(image="", text="📦")
+
     def on_confirm(self):
         new_name = self.entry_rename.get().strip()
+        new_desc = self.entry_desc.get().strip()
         if not new_name:
             messagebox.showwarning("Cảnh báo", "Tên không được để trống!")
             return
@@ -120,6 +213,7 @@ class EditOverlay(ctk.CTkFrame):
 
             if self.idx is not None:
                 data["apps"][self.idx]["name"] = new_name
+                data["apps"][self.idx]["description"] = new_desc
 
                 if self.selected_file_path[0]:
                     file_path = self.selected_file_path[0]
@@ -139,6 +233,43 @@ class EditOverlay(ctk.CTkFrame):
                         shutil.copy2(file_path, dest_path)
 
                     data["apps"][self.idx]["exe"] = filename
+                
+                # Handle Icon Update
+                if self.icon_deleted:
+                    old_icon_name = data["apps"][self.idx].get("icon")
+                    if old_icon_name:
+                        # Xóa icon cũ nếu không có app nào khác dùng
+                        other_icons = [app.get("icon") for i, app in enumerate(data["apps"]) if i != self.idx]
+                        if old_icon_name not in other_icons:
+                            old_icon_full = os.path.join(AssetManager.ASSETS_DIR, "apps", old_icon_name)
+                            if os.path.exists(old_icon_full):
+                                try: os.remove(old_icon_full)
+                                except: pass
+                        if "icon" in data["apps"][self.idx]:
+                            del data["apps"][self.idx]["icon"]
+                
+                elif self.selected_icon_path[0]:
+                    old_icon_name = data["apps"][self.idx].get("icon")
+                    
+                    icon_src = self.selected_icon_path[0]
+                    icon_ext = os.path.splitext(icon_src)[1]
+                    safe_name = "".join([c for c in new_name if c.isalnum()]).lower()
+                    icon_filename = f"{safe_name}{icon_ext}"
+                    
+                    # Xóa icon cũ nếu khác icon mới và không có app nào khác đang dùng
+                    if old_icon_name and old_icon_name != icon_filename:
+                        other_icons = [app.get("icon") for i, app in enumerate(data["apps"]) if i != self.idx]
+                        if old_icon_name not in other_icons:
+                            old_icon_full = os.path.join(AssetManager.ASSETS_DIR, "apps", old_icon_name)
+                            if os.path.exists(old_icon_full):
+                                try: os.remove(old_icon_full)
+                                except: pass
+
+                    assets_apps_dir = os.path.join(AssetManager.ASSETS_DIR, "apps")
+                    os.makedirs(assets_apps_dir, exist_ok=True)
+                    icon_dest = os.path.join(assets_apps_dir, icon_filename)
+                    shutil.copy2(icon_src, icon_dest)
+                    data["apps"][self.idx]["icon"] = icon_filename
 
                 self.log_func(f"[INFO] Đã cập nhật ứng dụng: {new_name}")
             else:
@@ -151,9 +282,24 @@ class EditOverlay(ctk.CTkFrame):
 
                 new_app = {
                     "name": new_name,
+                    "description": new_desc,
                     "exe": filename,
                     "type": "Install"
                 }
+                
+                # Handle New Icon
+                if self.selected_icon_path[0]:
+                    icon_src = self.selected_icon_path[0]
+                    icon_ext = os.path.splitext(icon_src)[1]
+                    safe_name = "".join([c for c in new_name if c.isalnum()]).lower()
+                    icon_filename = f"{safe_name}{icon_ext}"
+                    
+                    assets_apps_dir = os.path.join(AssetManager.ASSETS_DIR, "apps")
+                    os.makedirs(assets_apps_dir, exist_ok=True)
+                    icon_dest = os.path.join(assets_apps_dir, icon_filename)
+                    shutil.copy2(icon_src, icon_dest)
+                    new_app["icon"] = icon_filename
+                
                 data["apps"].append(new_app)
                 self.log_func(f"[INFO] Đã thêm ứng dụng mới: {new_name}")
 
