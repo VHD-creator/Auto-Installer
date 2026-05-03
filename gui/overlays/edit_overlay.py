@@ -106,7 +106,16 @@ class EditOverlay(ctk.CTkFrame):
         self.entry_desc = ctk.CTkEntry(center_frame, font=Styles.FONT_DESC, height=35, placeholder_text="Mô tả ngắn gọn về ứng dụng...")
         if idx is not None:
             self.entry_desc.insert(0, old_desc)
-        self.entry_desc.pack(fill="x", padx=30, pady=(5, 10))
+        self.entry_desc.pack(fill="x", padx=30, pady=(5, 0))
+        
+        self.lbl_note = ctk.CTkLabel(
+            center_frame, 
+            text="* Lưu ý: vui lòng chạy quyền admin Unikey trước khi thao tác", 
+            font=(Styles.FONT_FAMILY_MAIN, 11, "italic"),
+            text_color=Styles.COLOR_ERROR,
+            anchor="w"
+        )
+        self.lbl_note.pack(fill="x", padx=35, pady=(2, 10))
         
         self.entry_rename.focus()
         if idx is not None:

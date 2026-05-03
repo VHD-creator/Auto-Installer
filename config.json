@@ -2,73 +2,80 @@
     "apps": [
         {
             "name": "WinRAR",
-            "description": "Phần mềm nén và giải nén file mạnh mẽ.",
+            "description": "Phần mềm nén và giải nén file mạnh mẽ",
             "exe": "3winrar.exe",
             "type": "install",
             "icon": "winrar.png"
         },
         {
             "name": "Google Chrome",
-            "description": "Trình duyệt web nhanh chóng, bảo mật.",
+            "description": "Trình duyệt web nhanh chóng, bảo mật",
             "exe": "ChromeSetup.exe",
             "type": "install",
             "icon": "chrome.png"
         },
         {
             "name": "Foxit PDF Reader",
-            "description": "Hỗ trợ đọc và chỉnh sửa file PDF.",
+            "description": "Hỗ trợ đọc và chỉnh sửa file PDF",
             "exe": "FoxitPDFReader_x64.exe",
             "type": "install",
             "icon": "foxit.png"
         },
         {
             "name": "Microsoft Office 2019",
-            "description": "Bộ ứng dụng văn phòng bản quyền.",
+            "description": "Bộ ứng dụng văn phòng bản quyền",
             "exe": "Office2019ProPlus.exe",
             "type": "install",
             "icon": "office.png"
         },
         {
             "name": "Office 365",
-            "description": "Dịch vụ đám mây và ứng dụng Office.",
+            "description": "Dịch vụ đám mây và ứng dụng Office",
             "exe": "setup.exe",
             "type": "install",
             "icon": "office365.png"
         },
         {
             "name": "UltraViewer",
-            "description": "Điều khiển máy tính từ xa dễ dàng.",
+            "description": "Điều khiển máy tính từ xa dễ dàng",
             "exe": "UltraViewer.exe",
             "type": "install",
             "icon": "ultraviewer.png"
         },
         {
             "name": "UniKey",
-            "description": "Bộ gõ tiếng Việt phổ biến nhất.",
+            "description": "Bộ gõ tiếng Việt phổ biến nhất",
             "exe": "UniKeyNT.exe",
             "type": "copy",
             "icon": "unikey.png"
         },
         {
             "name": "Capcut",
-            "description": "Phần mềm chỉnh sửa video chuyên nghiệp.",
+            "description": "Phần mềm chỉnh sửa video chuyên nghiệp",
             "exe": "CapCut_7562815338254106641_installer.exe",
             "type": "install",
             "icon": "capcut.png"
         },
         {
             "name": "Canva",
-            "description": "Thiết kế đồ họa online tiện lợi.",
+            "description": "Thiết kế đồ họa online tiện lợi",
             "exe": "CanvaSetup_1.115.0.exe",
             "type": "install",
             "icon": "canva.png"
         },
         {
             "name": "Telegram",
-            "description": "Ứng dụng nhắn tin bảo mật, đa nền tảng.",
+            "description": "Ứng dụng nhắn tin bảo mật, đa nền tảng",
             "exe": "tsetup-x64.6.4.1.exe",
             "type": "Install",
             "icon": "telegram.png"
+        },
+        {
+            "name": "Steam",
+            "description": "Nền tảng trò chơi trực tuyến tuyệt vời nhất",
+            "exe": "SteamSetup.exe",
+            "type": "Install",
+            "icon": "steam.png"
         }
     ]
 }
