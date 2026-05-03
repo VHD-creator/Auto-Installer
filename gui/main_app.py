@@ -39,6 +39,7 @@ class MainApp(ctk.CTk):
         self.switch_tab("install")
 
     def switch_tab(self, tab_name):
+        self.sidebar.select_tab(tab_name)
         self.install_tab.pack_forget()
         self.edit_tab.pack_forget()
         self.info_tab.pack_forget()
