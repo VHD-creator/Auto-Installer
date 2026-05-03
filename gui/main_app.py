@@ -10,7 +10,7 @@ class MainApp(ctk.CTk):
         super().__init__()
         
         self.title("Auto install app by Phạm Sự")
-        self.geometry("900x650")
+        self.geometry("1100x750")
         self.resizable(False, False)
         self.configure(fg_color=("#ffffff", "#0d1117"))
 
@@ -45,10 +45,13 @@ class MainApp(ctk.CTk):
         self.info_tab.pack_forget()
 
         if tab_name == "install":
+            self.header.set_title("CHỌN ỨNG DỤNG CẦN CÀI ĐẶT")
             self.install_tab.pack(fill="both", expand=True)
             self.install_tab.load_app_list()
         elif tab_name == "edit":
+            self.header.set_title("QUẢN LÝ & CHỈNH SỬA ỨNG DỤNG")
             self.edit_tab.pack(fill="both", expand=True)
             self.edit_tab.load_edit_app_list()
         elif tab_name == "info":
+            self.header.set_title("VỀ ỨNG DỤNG")
             self.info_tab.pack(fill="both", expand=True)

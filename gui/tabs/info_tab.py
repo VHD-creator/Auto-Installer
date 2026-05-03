@@ -6,10 +6,7 @@ class InfoTab(ctk.CTkFrame):
         super().__init__(master, fg_color="transparent")
 
         info_card = ctk.CTkFrame(self)
-        info_card.pack(fill="both", padx=40, pady=40, expand=True)
-
-        info_title = ctk.CTkLabel(info_card, text="VỀ ỨNG DỤNG", font=Styles.FONT_TITLE_LARGE)
-        info_title.pack(pady=(30, 20))
+        info_card.pack(fill="both", padx=40, pady=20, expand=True)
 
         about_text = """
 Công cụ tự động cài đặt ứng dụng hàng loạt (Auto Install Tool).

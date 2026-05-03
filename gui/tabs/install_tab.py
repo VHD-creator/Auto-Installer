@@ -17,23 +17,15 @@ class InstallTab(ctk.CTkFrame):
         
         # Top Frame
         top_frame = ctk.CTkFrame(self, fg_color="transparent")
-        top_frame.pack(side="top", fill="both", expand=True, padx=20, pady=(10, 5))
-
-        header_row = ctk.CTkFrame(top_frame, fg_color="transparent")
-        header_row.pack(fill="x", padx=10, pady=(5, 5))
-
-        title_label = ctk.CTkLabel(header_row, text="Chọn ứng dụng cần cài đặt", font=Styles.FONT_TITLE_SMALL)
-        title_label.pack(side="left")
-
-        self.selection_status_label = ctk.CTkLabel(header_row, text="Đã chọn: 0", font=Styles.FONT_LABEL_BOLD, text_color=Styles.COLOR_PRIMARY)
-        self.selection_status_label.pack(side="right")
+        top_frame.pack(side="top", fill="both", expand=True, padx=20, pady=(5, 5))
 
         self.scroll_frame = ctk.CTkScrollableFrame(top_frame, fg_color="transparent")
         self.scroll_frame.pack(fill="both", expand=True, padx=5, pady=5)
         
-        # Cấu hình sẵn trọng số cho 2 cột để tránh lỗi tính toán kích thước ban đầu
+        # Cấu hình sẵn trọng số cho 3 cột để tránh lỗi tính toán kích thước ban đầu
         self.scroll_frame.grid_columnconfigure(0, weight=1, uniform="column")
         self.scroll_frame.grid_columnconfigure(1, weight=1, uniform="column")
+        self.scroll_frame.grid_columnconfigure(2, weight=1, uniform="column")
 
         # Bottom Frame
         self.bottom_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -50,10 +42,11 @@ class InstallTab(ctk.CTkFrame):
             font=Styles.FONT_BUTTON_SMALL
         )
         self.btn_select_all.pack(side="left", padx=(5, 10))
+        self.selection_status_label = None # Sẽ hiển thị trong nút Cài đặt
 
         self.btn_install = ctk.CTkButton(
             btn_frame, 
-            text="Cài đặt", 
+            text="Cài đặt (0)", 
             command=self.install_apps, 
             height=40,
             font=Styles.FONT_BUTTON_SMALL,
@@ -153,11 +146,12 @@ class InstallTab(ctk.CTkFrame):
         try:
             apps = load_config()
             self.vars = []
-            columns = 2
+            columns = 3
             
-            # Sử dụng uniform="column" để ép 2 cột luôn có chiều rộng bằng chẵn nhau
+            # Sử dụng uniform="column" để ép các cột luôn có chiều rộng bằng chẵn nhau
             self.scroll_frame.grid_columnconfigure(0, weight=1, uniform="column")
             self.scroll_frame.grid_columnconfigure(1, weight=1, uniform="column")
+            self.scroll_frame.grid_columnconfigure(2, weight=1, uniform="column")
 
             for i, app in enumerate(apps):
                 name = app.get("name", "Unknown")
@@ -200,7 +194,7 @@ class InstallTab(ctk.CTkFrame):
 
     def update_select_all_btn(self):
         checked_count = sum(1 for item in self.vars if item["card"].is_selected())
-        self.selection_status_label.configure(text=f"Đã chọn: {checked_count}")
+        self.btn_install.configure(text=f"Cài đặt ({checked_count})")
 
         all_selected = all(item["card"].is_selected() for item in self.vars) if self.vars else False
         if all_selected:

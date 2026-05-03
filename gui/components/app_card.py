@@ -28,19 +28,19 @@ class AppCard(ctk.CTkFrame):
         self.grid_columnconfigure(1, weight=1)
         
         # 1. Icon area (Left)
-        self.icon_frame = ctk.CTkFrame(self, width=54, height=54, corner_radius=12, fg_color=("#f6f8fa", "#21262d"))
-        self.icon_frame.grid(row=0, column=0, rowspan=2, padx=15, pady=15)
+        self.icon_frame = ctk.CTkFrame(self, width=48, height=48, corner_radius=10, fg_color=("#f6f8fa", "#21262d"))
+        self.icon_frame.grid(row=0, column=0, rowspan=2, padx=12, pady=12)
         self.icon_frame.grid_propagate(False)
         
         if app_icon:
             self.icon_label = ctk.CTkLabel(self.icon_frame, image=app_icon, text="")
         else:
-            self.icon_label = ctk.CTkLabel(self.icon_frame, text="📦", font=(Styles.FONT_FAMILY_MAIN, 24))
+            self.icon_label = ctk.CTkLabel(self.icon_frame, text="📦", font=(Styles.FONT_FAMILY_MAIN, 20))
         self.icon_label.place(relx=0.5, rely=0.5, anchor="center")
         
         # 2. Text area (Middle)
         self.name_label = ctk.CTkLabel(self, text=name, font=Styles.FONT_LABEL_BOLD, text_color=self.text_primary, anchor="w")
-        self.name_label.grid(row=0, column=1, sticky="sw", padx=(0, 10), pady=(15, 0))
+        self.name_label.grid(row=0, column=1, sticky="sw", padx=(0, 10), pady=(12, 0))
         
         self.full_description = description
         self.scrolling = False
@@ -48,13 +48,13 @@ class AppCard(ctk.CTkFrame):
         self.marquee_speed = 150 # milliseconds
         
         self.desc_label = ctk.CTkLabel(self, text=description, font=Styles.FONT_DESC, text_color=self.text_secondary, anchor="w")
-        self.desc_label.grid(row=1, column=1, sticky="nw", padx=(0, 10), pady=(2, 15))
+        self.desc_label.grid(row=1, column=1, sticky="nw", padx=(0, 10), pady=(1, 12))
         
         # 3. Selection Indicator (Right)
         self.indicator = ctk.CTkLabel(self, text="", image=self.img_unchecked)
         if not self.img_unchecked:
              self.indicator.configure(text="○", font=(Styles.FONT_FAMILY_MAIN, 20), text_color=("#afb8c1", "#484f58"))
-        self.indicator.grid(row=0, column=2, rowspan=2, padx=20)
+        self.indicator.grid(row=0, column=2, rowspan=2, padx=15)
         
         # Bind click events
         for widget in [self, self.name_label, self.desc_label, self.icon_frame, self.icon_label, self.indicator]:
