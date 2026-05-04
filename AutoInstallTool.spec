@@ -5,7 +5,9 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[
+        ('gui/assets', 'gui/assets'),
+    ],
     hiddenimports=['gui', 'gui.tabs', 'gui.tabs.install_tab', 'gui.tabs.edit_tab', 'gui.tabs.info_tab', 'gui.overlays', 'gui.overlays.edit_overlay', 'core', 'core.admin_check', 'core.config_manager', 'core.process_runner'],
     hookspath=[],
     hooksconfig={},
