@@ -14,6 +14,8 @@ class Sidebar(ctk.CTkFrame):
         icon_install = AssetManager.get_system_icon("menu-install", size=(26, 26))
         icon_edit = AssetManager.get_system_icon("menu-edit", size=(26, 26))
         icon_info = AssetManager.get_system_icon("information", size=(26, 26))
+        # 👇 Đổi tên file "version-check" thành tên PNG bạn đã đặt trong gui/assets/icons/
+        icon_version = AssetManager.get_system_icon("version-check", size=(16, 16))
 
         # Header với Logo và Text (2 dòng như trong ảnh)
         header_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -32,8 +34,8 @@ class Sidebar(ctk.CTkFrame):
         footer_frame = ctk.CTkFrame(self, fg_color="transparent")
         footer_frame.pack(side="bottom", padx=25, pady=25, fill="x")
         
-        ctk.CTkLabel(footer_frame, text="✔️ Version 2.0.0", font=Styles.FONT_DESC, text_color=Styles.TEXT_SECONDARY, anchor="w").pack(fill="x")
-        ctk.CTkLabel(footer_frame, text="© 2025 Phạm Sự", font=Styles.FONT_DESC, text_color=Styles.TEXT_SECONDARY, anchor="w").pack(fill="x")
+        ctk.CTkLabel(footer_frame, image=icon_version, text="  Version 2.0.0", compound="left", font=Styles.FONT_DESC, text_color=Styles.TEXT_SECONDARY, anchor="w").pack(fill="x")
+        ctk.CTkLabel(footer_frame, text="© 2026 Phạm Sự", font=Styles.FONT_DESC, text_color=Styles.TEXT_SECONDARY, anchor="w").pack(fill="x")
         ctk.CTkLabel(footer_frame, text="All rights reserved", font=Styles.FONT_DESC, text_color=Styles.TEXT_SECONDARY, anchor="w").pack(fill="x")
 
         self.btn_install_tab = ctk.CTkButton(
