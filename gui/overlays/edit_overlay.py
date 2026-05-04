@@ -2,6 +2,7 @@ import os
 import shutil
 import json
 import sys
+import threading
 import customtkinter as ctk
 from tkinter import messagebox, filedialog
 from PIL import Image
@@ -18,6 +19,7 @@ class EditOverlay(ctk.CTkFrame):
         self.on_success_callback = on_success_callback
         self.log_func = log_func if log_func else print
         self.icon_deleted = False
+        self.copy_whole_folder = False
         
         self.place(relx=0, rely=0, relwidth=1, relheight=1)
         
@@ -149,7 +151,7 @@ class EditOverlay(ctk.CTkFrame):
         btn_action_frame = ctk.CTkFrame(center_frame, fg_color="transparent")
         btn_action_frame.pack(fill="x", padx=30, pady=(20, 10))
 
-        btn_confirm = ctk.CTkButton(
+        self.btn_confirm = ctk.CTkButton(
             btn_action_frame, 
             text="Xác nhận", 
             fg_color=Styles.COLOR_SUCCESS, 
@@ -158,9 +160,9 @@ class EditOverlay(ctk.CTkFrame):
             font=Styles.FONT_BUTTON_SMALL,
             command=self.on_confirm
         )
-        btn_confirm.pack(side="left", padx=(0, 10), expand=True, fill="x")
+        self.btn_confirm.pack(side="left", padx=(0, 10), expand=True, fill="x")
 
-        btn_cancel = ctk.CTkButton(
+        self.btn_cancel = ctk.CTkButton(
             btn_action_frame, 
             text="Quay lại", 
             fg_color=Styles.COLOR_ERROR, 
@@ -169,16 +171,27 @@ class EditOverlay(ctk.CTkFrame):
             font=Styles.FONT_BUTTON_SMALL,
             command=self.destroy
         )
-        btn_cancel.pack(side="right", padx=(10, 0), expand=True, fill="x")
+        self.btn_cancel.pack(side="right", padx=(10, 0), expand=True, fill="x")
 
     def pick_file(self):
         f_path = filedialog.askopenfilename(
             title="Chọn file cài đặt",
-            filetypes=[("Executable Files", "*.exe *.msi"), ("All Files", "*.*")]
+            filetypes=[("Install Files", "*.exe *.msi *.iso *.cmd *.bat"), ("All Files", "*.*")]
         )
         if f_path:
             self.selected_file_path[0] = f_path
             self.exe_label.configure(text=f"File mới: {os.path.basename(f_path)}")
+            
+            file_dir = os.path.dirname(f_path)
+            try:
+                other_files = [f for f in os.listdir(file_dir) if f != os.path.basename(f_path) and os.path.isfile(os.path.join(file_dir, f))]
+                if other_files:
+                    ans = messagebox.askyesno("Copy toàn bộ thư mục?", "Thư mục chứa file này còn có các file khác (có thể là file phụ trợ).\nBạn có muốn copy TOÀN BỘ thư mục này vào phần mềm không?")
+                    self.copy_whole_folder = ans
+                else:
+                    self.copy_whole_folder = False
+            except Exception:
+                self.copy_whole_folder = False
 
     def pick_icon(self):
         f_path = filedialog.askopenfilename(
@@ -211,118 +224,146 @@ class EditOverlay(ctk.CTkFrame):
             messagebox.showwarning("Cảnh báo", "Vui lòng chọn file cài đặt!")
             return
 
-        base_path = os.path.dirname(os.path.realpath(sys.argv[0]))
-        config_path = os.path.join(base_path, "config.json")
-        installers_dir = os.path.join(base_path, "installers")
-        os.makedirs(installers_dir, exist_ok=True)
+        self.btn_confirm.configure(state="disabled", text="Đang xử lý...")
+        self.btn_cancel.configure(state="disabled")
 
-        try:
-            with open(config_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
+        def save_process():
+            base_path = os.path.dirname(os.path.realpath(sys.argv[0]))
+            config_path = os.path.join(base_path, "config.json")
+            installers_dir = os.path.join(base_path, "installers")
+            os.makedirs(installers_dir, exist_ok=True)
 
-            if self.idx is not None:
-                data["apps"][self.idx]["name"] = new_name
-                data["apps"][self.idx]["description"] = new_desc
+            try:
+                with open(config_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
 
-                if self.selected_file_path[0]:
+                if self.idx is not None:
+                    data["apps"][self.idx]["name"] = new_name
+                    data["apps"][self.idx]["description"] = new_desc
+
+                    if self.selected_file_path[0]:
+                        file_path = self.selected_file_path[0]
+                        filename = os.path.basename(file_path)
+
+                        if getattr(self, "copy_whole_folder", False):
+                            safe_folder_name = "".join([c for c in new_name if c.isalnum() or c in (" ", "-", "_")]).strip()
+                            if not safe_folder_name: safe_folder_name = f"app_{self.idx}"
+                            dest_dir = os.path.join(installers_dir, safe_folder_name)
+                            if os.path.exists(dest_dir):
+                                shutil.rmtree(dest_dir, ignore_errors=True)
+                            shutil.copytree(os.path.dirname(file_path), dest_dir)
+                            data["apps"][self.idx]["exe"] = f"{safe_folder_name}/{filename}"
+                        else:
+                            dest_path = os.path.join(installers_dir, filename)
+                            old_file_name = data["apps"][self.idx].get("exe")
+                            if old_file_name and old_file_name != filename:
+                                old_file_full = os.path.join(installers_dir, old_file_name)
+                                if os.path.exists(old_file_full) and os.path.isfile(old_file_full):
+                                    try: os.remove(old_file_full)
+                                    except: pass
+                            if not os.path.exists(dest_path):
+                                shutil.copy2(file_path, dest_path)
+                            data["apps"][self.idx]["exe"] = filename
+                    
+                    # Handle Icon Update
+                    if self.icon_deleted:
+                        old_icon_name = data["apps"][self.idx].get("icon")
+                        if old_icon_name:
+                            # Xóa icon cũ nếu không có app nào khác dùng
+                            other_icons = [app.get("icon") for i, app in enumerate(data["apps"]) if i != self.idx]
+                            if old_icon_name not in other_icons:
+                                old_icon_full = os.path.join(AssetManager.ASSETS_DIR, "apps", old_icon_name)
+                                if os.path.exists(old_icon_full):
+                                    try: os.remove(old_icon_full)
+                                    except: pass
+                            if "icon" in data["apps"][self.idx]:
+                                del data["apps"][self.idx]["icon"]
+                    
+                    elif self.selected_icon_path[0]:
+                        old_icon_name = data["apps"][self.idx].get("icon")
+                        
+                        icon_src = self.selected_icon_path[0]
+                        icon_ext = os.path.splitext(icon_src)[1]
+                        safe_name = "".join([c for c in new_name if c.isalnum()]).lower()
+                        icon_filename = f"{safe_name}{icon_ext}"
+                        
+                        # Xóa icon cũ nếu khác icon mới và không có app nào khác đang dùng
+                        if old_icon_name and old_icon_name != icon_filename:
+                            other_icons = [app.get("icon") for i, app in enumerate(data["apps"]) if i != self.idx]
+                            if old_icon_name not in other_icons:
+                                old_icon_full = os.path.join(AssetManager.ASSETS_DIR, "apps", old_icon_name)
+                                if os.path.exists(old_icon_full):
+                                    try: os.remove(old_icon_full)
+                                    except: pass
+
+                        assets_apps_dir = os.path.join(AssetManager.ASSETS_DIR, "apps")
+                        os.makedirs(assets_apps_dir, exist_ok=True)
+                        icon_dest = os.path.join(assets_apps_dir, icon_filename)
+                        shutil.copy2(icon_src, icon_dest)
+                        data["apps"][self.idx]["icon"] = icon_filename
+
+                    self.log_func(f"[INFO] Đã cập nhật ứng dụng: {new_name}")
+                else:
                     file_path = self.selected_file_path[0]
                     filename = os.path.basename(file_path)
-                    dest_path = os.path.join(installers_dir, filename)
-
-                    old_file_name = data["apps"][self.idx].get("exe")
-                    if old_file_name and old_file_name != filename:
-                        old_file_full = os.path.join(installers_dir, old_file_name)
-                        if os.path.exists(old_file_full):
-                            try:
-                                os.remove(old_file_full)
-                            except:
-                                pass
-
-                    if not os.path.exists(dest_path):
-                        shutil.copy2(file_path, dest_path)
-
-                    data["apps"][self.idx]["exe"] = filename
-                
-                # Handle Icon Update
-                if self.icon_deleted:
-                    old_icon_name = data["apps"][self.idx].get("icon")
-                    if old_icon_name:
-                        # Xóa icon cũ nếu không có app nào khác dùng
-                        other_icons = [app.get("icon") for i, app in enumerate(data["apps"]) if i != self.idx]
-                        if old_icon_name not in other_icons:
-                            old_icon_full = os.path.join(AssetManager.ASSETS_DIR, "apps", old_icon_name)
-                            if os.path.exists(old_icon_full):
-                                try: os.remove(old_icon_full)
-                                except: pass
-                        if "icon" in data["apps"][self.idx]:
-                            del data["apps"][self.idx]["icon"]
-                
-                elif self.selected_icon_path[0]:
-                    old_icon_name = data["apps"][self.idx].get("icon")
                     
-                    icon_src = self.selected_icon_path[0]
-                    icon_ext = os.path.splitext(icon_src)[1]
-                    safe_name = "".join([c for c in new_name if c.isalnum()]).lower()
-                    icon_filename = f"{safe_name}{icon_ext}"
+                    if getattr(self, "copy_whole_folder", False):
+                        safe_folder_name = "".join([c for c in new_name if c.isalnum() or c in (" ", "-", "_")]).strip()
+                        if not safe_folder_name: safe_folder_name = "new_app"
+                        dest_dir = os.path.join(installers_dir, safe_folder_name)
+                        if os.path.exists(dest_dir):
+                            shutil.rmtree(dest_dir, ignore_errors=True)
+                        shutil.copytree(os.path.dirname(file_path), dest_dir)
+                        saved_exe = f"{safe_folder_name}/{filename}"
+                    else:
+                        dest_path = os.path.join(installers_dir, filename)
+                        if not os.path.exists(dest_path):
+                            shutil.copy2(file_path, dest_path)
+                        saved_exe = filename
+
+                    new_app = {
+                        "name": new_name,
+                        "description": new_desc,
+                        "exe": saved_exe,
+                        "type": "Install"
+                    }
                     
-                    # Xóa icon cũ nếu khác icon mới và không có app nào khác đang dùng
-                    if old_icon_name and old_icon_name != icon_filename:
-                        other_icons = [app.get("icon") for i, app in enumerate(data["apps"]) if i != self.idx]
-                        if old_icon_name not in other_icons:
-                            old_icon_full = os.path.join(AssetManager.ASSETS_DIR, "apps", old_icon_name)
-                            if os.path.exists(old_icon_full):
-                                try: os.remove(old_icon_full)
-                                except: pass
-
-                    assets_apps_dir = os.path.join(AssetManager.ASSETS_DIR, "apps")
-                    os.makedirs(assets_apps_dir, exist_ok=True)
-                    icon_dest = os.path.join(assets_apps_dir, icon_filename)
-                    shutil.copy2(icon_src, icon_dest)
-                    data["apps"][self.idx]["icon"] = icon_filename
-
-                self.log_func(f"[INFO] Đã cập nhật ứng dụng: {new_name}")
-            else:
-                file_path = self.selected_file_path[0]
-                filename = os.path.basename(file_path)
-                dest_path = os.path.join(installers_dir, filename)
-
-                if not os.path.exists(dest_path):
-                    shutil.copy2(file_path, dest_path)
-
-                new_app = {
-                    "name": new_name,
-                    "description": new_desc,
-                    "exe": filename,
-                    "type": "Install"
-                }
-                
-                # Handle New Icon
-                if self.selected_icon_path[0]:
-                    icon_src = self.selected_icon_path[0]
-                    icon_ext = os.path.splitext(icon_src)[1]
-                    safe_name = "".join([c for c in new_name if c.isalnum()]).lower()
-                    icon_filename = f"{safe_name}{icon_ext}"
+                    # Handle New Icon
+                    if self.selected_icon_path[0]:
+                        icon_src = self.selected_icon_path[0]
+                        icon_ext = os.path.splitext(icon_src)[1]
+                        safe_name = "".join([c for c in new_name if c.isalnum()]).lower()
+                        icon_filename = f"{safe_name}{icon_ext}"
+                        
+                        assets_apps_dir = os.path.join(AssetManager.ASSETS_DIR, "apps")
+                        os.makedirs(assets_apps_dir, exist_ok=True)
+                        icon_dest = os.path.join(assets_apps_dir, icon_filename)
+                        shutil.copy2(icon_src, icon_dest)
+                        new_app["icon"] = icon_filename
                     
-                    assets_apps_dir = os.path.join(AssetManager.ASSETS_DIR, "apps")
-                    os.makedirs(assets_apps_dir, exist_ok=True)
-                    icon_dest = os.path.join(assets_apps_dir, icon_filename)
-                    shutil.copy2(icon_src, icon_dest)
-                    new_app["icon"] = icon_filename
+                    data["apps"].append(new_app)
+                    self.log_func(f"[INFO] Đã thêm ứng dụng mới: {new_name}")
+
+                with open(config_path, "w", encoding="utf-8") as f:
+                    json.dump(data, f, ensure_ascii=False, indent=4)
+
+                # Xóa cache icon để giao diện cập nhật ngay lập tức
+                AssetManager.clear_cache()
+
+                def on_success():
+                    if self.on_success_callback:
+                        self.on_success_callback()
+                    self.destroy()
+
+                self.after(0, on_success)
+            except Exception as e:
+                self.log_func(f"[ERROR] Không thể lưu thay đổi: {e}")
                 
-                data["apps"].append(new_app)
-                self.log_func(f"[INFO] Đã thêm ứng dụng mới: {new_name}")
-
-            with open(config_path, "w", encoding="utf-8") as f:
-                json.dump(data, f, ensure_ascii=False, indent=4)
-
-            # Xóa cache icon để giao diện cập nhật ngay lập tức
-            AssetManager.clear_cache()
-
-            if self.on_success_callback:
-                self.on_success_callback()
+                def on_error():
+                    messagebox.showerror("Lỗi", f"Lỗi lưu cấu hình: {e}")
+                    self.btn_confirm.configure(state="normal", text="Xác nhận")
+                    self.btn_cancel.configure(state="normal")
                 
-            self.destroy()
-        except Exception as e:
+                self.after(0, on_error)
 
-            self.log_func(f"[ERROR] Không thể lưu thay đổi: {e}")
-            messagebox.showerror("Lỗi", f"Lỗi lưu cấu hình: {e}")
+        threading.Thread(target=save_process, daemon=True).start()

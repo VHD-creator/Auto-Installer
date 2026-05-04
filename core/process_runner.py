@@ -57,6 +57,40 @@ def run_installation(checked_apps, log_func, progress_func, complete_func):
                 elif "winrar" in exe_lower:
                     log_func({"status": "INFO", "msg": "Đang cài đặt WinRAR ở chế độ im lặng..."})
                     result = subprocess.run([exe_path, "/S"], check=False)
+                elif exe_lower.endswith('.cmd') or exe_lower.endswith('.bat'):
+                    log_func({"status": "INFO", "msg": f"Đang chạy script {name}..."})
+                    result = subprocess.run(f'start /wait "" "{exe_path}"', shell=True, cwd=os.path.dirname(exe_path))
+                elif exe_lower.endswith('.iso'):
+                    log_func({"status": "INFO", "msg": f"Đang mount file ISO và cài đặt {name}..."})
+                    ps_mount = f'$Image = Mount-DiskImage -ImagePath "{exe_path}" -PassThru; ($Image | Get-Volume).DriveLetter'
+                    mount_proc = subprocess.run(["powershell", "-Command", ps_mount], capture_output=True, text=True, shell=True)
+                    drive_letter = mount_proc.stdout.strip()
+                    
+                    if drive_letter:
+                        drive_path = f"{drive_letter}:\\"
+                        target_exe = None
+                        for exe_name in ["setup.exe", "install.exe", "autorun.exe"]:
+                            if os.path.exists(os.path.join(drive_path, exe_name)):
+                                target_exe = os.path.join(drive_path, exe_name)
+                                break
+                        
+                        if not target_exe:
+                            for file in os.listdir(drive_path):
+                                if file.lower().endswith('.exe'):
+                                    target_exe = os.path.join(drive_path, file)
+                                    break
+                        
+                        if target_exe:
+                            log_func({"status": "INFO", "msg": f"Đang chạy {os.path.basename(target_exe)} (Vui lòng tự đóng đĩa ảo ISO sau khi cài xong)..."})
+                            result = subprocess.run([target_exe], check=False)
+                        else:
+                            log_func({"status": "ERROR", "msg": f"Không tìm thấy file .exe trong ISO {name}."})
+                            result = subprocess.CompletedProcess(args=[], returncode=1)
+                        
+                        # Không tự động unmount ISO theo yêu cầu của user
+                    else:
+                        log_func({"status": "ERROR", "msg": f"Không thể mount file ISO {name}."})
+                        result = subprocess.CompletedProcess(args=[], returncode=1)
                 else:
                     log_func({"status": "INFO", "msg": f"Đang cài đặt {name}..."})
                     try:
@@ -67,10 +101,11 @@ def run_installation(checked_apps, log_func, progress_func, complete_func):
                                 "-s", "/passive", "--silent", "--quiet", "-silent", "-quiet", "--unattended",
                                 "/extract", "--mode=silent"
                             ],
-                            check=False
+                            check=False,
+                            cwd=os.path.dirname(exe_path)
                         )
                     except:
-                        result = subprocess.run([exe_path], check=False)
+                        result = subprocess.run([exe_path], check=False, cwd=os.path.dirname(exe_path))
 
                 # Kiểm tra kết quả sau khi cài đặt
                 if result:
