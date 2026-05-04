@@ -72,10 +72,9 @@ class EditTab(ctk.CTkFrame):
 
             original_bg = row_frame.cget("fg_color")
 
-            # 1. App Icon with Hover Overlay (Click để đổi ảnh ngay lập tức)
+            # 1. App Icon
             icon_name = app.get("icon", "")
             app_icon = AssetManager.get_app_icon(icon_name, size=(44, 44))
-            overlay_img = AssetManager.get_system_icon("edit-overlay", size=(44, 44))
 
             icon_container = ctk.CTkFrame(row_frame, width=54, height=54, corner_radius=10, fg_color=("#f0f0f0", "#1a1a1a"))
             icon_container.pack(side="left", padx=12, pady=8)
@@ -84,25 +83,6 @@ class EditTab(ctk.CTkFrame):
             icon_lbl = ctk.CTkLabel(icon_container, text="" if app_icon else "📦", image=app_icon)
             icon_lbl.place(relx=0.5, rely=0.5, anchor="center")
 
-            overlay_lbl = ctk.CTkLabel(icon_container, text="", image=overlay_img, cursor="hand2")
-            overlay_lbl.bind("<Button-1>", lambda e, idx=i: self.pick_and_replace_icon(idx))
-            
-            def on_enter(e):
-                overlay_lbl.place(relx=0.5, rely=0.5, anchor="center")
-                
-            def on_leave(e):
-                # Kiểm tra xem chuột có thực sự rời khỏi container không
-                x, y = icon_container.winfo_pointerxy()
-                target = icon_container.winfo_containing(x, y)
-                
-                # Nếu target vẫn là container hoặc con của nó thì không ẩn
-                if target == icon_container or (target and target.master == icon_container):
-                    return
-                overlay_lbl.place_forget()
-            
-            icon_container.bind("<Enter>", on_enter)
-            icon_container.bind("<Leave>", on_leave)
-            overlay_lbl.bind("<Leave>", on_leave) # Overlay cũng cần bind leave để tránh mất event
 
             # 2. App Name
             name_lbl = ctk.CTkLabel(
@@ -178,8 +158,33 @@ class EditTab(ctk.CTkFrame):
                 with open(config_path, "r", encoding="utf-8") as f:
                     config_data = json.load(f)
                 
+                # 1. Lấy thông tin app trước khi xóa
+                app_to_delete = config_data["apps"][app_idx]
+                icon_name = app_to_delete.get("icon")
+                exe_name = app_to_delete.get("exe")
+                
+                # 2. Xóa khỏi config
                 config_data["apps"].pop(app_idx)
                 
+                # 3. Xóa file icon nếu không còn app nào dùng chung
+                if icon_name:
+                    other_icons = [app.get("icon") for app in config_data["apps"]]
+                    if icon_name not in other_icons:
+                        icon_path = os.path.join(base_path, "gui", "assets", "apps", icon_name)
+                        if os.path.exists(icon_path):
+                            try: os.remove(icon_path)
+                            except: pass
+                            
+                # 4. Xóa file bộ cài trong installers nếu không còn app nào dùng chung
+                if exe_name:
+                    other_exes = [app.get("exe") for app in config_data["apps"]]
+                    if exe_name not in other_exes:
+                        exe_path = os.path.join(base_path, "installers", exe_name)
+                        if os.path.exists(exe_path):
+                            try: os.remove(exe_path)
+                            except: pass
+                
+                # 5. Lưu lại config
                 with open(config_path, "w", encoding="utf-8") as f:
                     json.dump(config_data, f, indent=4, ensure_ascii=False)
                 
@@ -189,43 +194,10 @@ class EditTab(ctk.CTkFrame):
             except Exception as e:
                 messagebox.showerror("Lỗi", f"Không thể xóa ứng dụng: {e}")
 
+
     def refresh_all(self):
         self.load_edit_app_list()
         if self.on_data_changed_callback:
             self.on_data_changed_callback()
 
-    def pick_and_replace_icon(self, app_idx):
-        file_path = filedialog.askopenfilename(
-            title="Chọn Icon mới cho ứng dụng",
-            filetypes=[("Image files", "*.png *.jpg *.jpeg *.ico")]
-        )
-        if not file_path:
-            return
 
-        try:
-            base_path = os.path.dirname(os.path.realpath(sys.argv[0]))
-            assets_apps_dir = os.path.join(base_path, "gui", "assets", "apps")
-            os.makedirs(assets_apps_dir, exist_ok=True)
-
-            ext = os.path.splitext(file_path)[1]
-            new_icon_name = f"app_icon_{app_idx}_{int(os.path.getmtime(file_path))}{ext}" # Thêm timestamp để tránh cache
-            dest_path = os.path.join(assets_apps_dir, new_icon_name)
-
-            shutil.copy2(file_path, dest_path)
-
-            config_path = os.path.join(base_path, "config.json")
-            with open(config_path, "r", encoding="utf-8") as f:
-                config_data = json.load(f)
-
-            config_data["apps"][app_idx]["icon"] = new_icon_name
-
-            with open(config_path, "w", encoding="utf-8") as f:
-                json.dump(config_data, f, indent=4, ensure_ascii=False)
-
-            messagebox.showinfo("Thành công", f"Đã cập nhật icon mới!")
-            self.load_edit_app_list()
-            if self.on_data_changed_callback:
-                self.on_data_changed_callback()
-                
-        except Exception as e:
-            messagebox.showerror("Lỗi", f"Không thể cập nhật icon: {e}")

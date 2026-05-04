@@ -315,10 +315,14 @@ class EditOverlay(ctk.CTkFrame):
             with open(config_path, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=4)
 
+            # Xóa cache icon để giao diện cập nhật ngay lập tức
+            AssetManager.clear_cache()
+
             if self.on_success_callback:
                 self.on_success_callback()
                 
             self.destroy()
         except Exception as e:
+
             self.log_func(f"[ERROR] Không thể lưu thay đổi: {e}")
             messagebox.showerror("Lỗi", f"Lỗi lưu cấu hình: {e}")

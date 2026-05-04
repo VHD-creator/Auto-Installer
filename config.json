@@ -69,13 +69,6 @@
             "exe": "tsetup-x64.6.4.1.exe",
             "type": "Install",
             "icon": "telegram.png"
-        },
-        {
-            "name": "Steam",
-            "description": "Nền tảng trò chơi trực tuyến tuyệt vời nhất",
-            "exe": "SteamSetup.exe",
-            "type": "Install",
-            "icon": "steam.png"
         }
     ]
 }
