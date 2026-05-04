@@ -12,7 +12,7 @@ class MainApp(ctk.CTk):
         super().__init__()
         
         self.title("Auto install app by Phạm Sự")
-        self.geometry("1100x750")
+        self.geometry("1100x750+0+0")
         self.resizable(False, False)
         self.configure(fg_color=("#ffffff", "#0d1117"))
 

@@ -23,10 +23,10 @@ class Header(ctk.CTkFrame):
             width=120,
             height=32,
             font=Styles.FONT_DESC,
-            fg_color=("#f3f4f6", "#1f2937"), # Nền nút
-            button_color=("#e5e7eb", "#374151"), # Nền phần mũi tên
+            fg_color=("#e5e7eb", "#1f2937"), # Nền nút
+            button_color=("#d1d5db", "#374151"), # Nền phần mũi tên
             button_hover_color=Styles.COLOR_PRIMARY,
-            dropdown_fg_color=("#ffffff", "#111827"), # Nền danh sách đổ xuống
+            dropdown_fg_color=("#e5e7eb", "#111827"), # Nền danh sách đổ xuống
             dropdown_hover_color=Styles.COLOR_PRIMARY,
             dropdown_text_color=Styles.TEXT_PRIMARY,
             text_color=Styles.TEXT_PRIMARY,
