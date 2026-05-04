@@ -60,7 +60,15 @@ def run_installation(checked_apps, log_func, progress_func, complete_func):
                 else:
                     log_func({"status": "INFO", "msg": f"Đang cài đặt {name}..."})
                     try:
-                        result = subprocess.run([exe_path, "/silent", "/verysilent"], check=False)
+                        result = subprocess.run(
+                            [
+                                exe_path,
+                                "/silent", "/verysilent", "/S", "/quiet", "/qn", "/s", "/NORESTART", "/SUPPRESSMSGBOXES",
+                                "-s", "/passive", "--silent", "--quiet", "-silent", "-quiet", "--unattended",
+                                "/extract", "--mode=silent"
+                            ],
+                            check=False
+                        )
                     except:
                         result = subprocess.run([exe_path], check=False)
 
