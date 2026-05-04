@@ -1,4 +1,6 @@
 import customtkinter as ctk
+import os
+import sys
 from gui.sidebar import Sidebar
 from gui.header import Header
 from gui.tabs.install_tab import InstallTab
@@ -13,6 +15,10 @@ class MainApp(ctk.CTk):
         self.geometry("1100x750")
         self.resizable(False, False)
         self.configure(fg_color=("#ffffff", "#0d1117"))
+
+        # 0. Set Window Icon
+        self._set_window_icon()
+
 
         # 1. Sidebar
         self.sidebar = Sidebar(self, on_tab_change=self.switch_tab)
@@ -55,3 +61,28 @@ class MainApp(ctk.CTk):
         elif tab_name == "info":
             self.header.set_title("VỀ ỨNG DỤNG")
             self.info_tab.pack(fill="both", expand=True)
+
+    def _set_window_icon(self):
+        def apply_icon():
+            try:
+                # Xác định đường dẫn icon dựa trên việc có đang chạy file .exe hay không
+                if getattr(sys, 'frozen', False):
+                    base_path = sys._MEIPASS
+                else:
+                    base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                
+                icon_path = os.path.join(base_path, "gui", "assets", "icons", "title-logo.png")
+                
+                if os.path.exists(icon_path):
+                    from PIL import Image, ImageTk
+                    img = Image.open(icon_path)
+                    # Chuyển đổi sang PhotoImage để tkinter có thể hiểu được
+                    self.icon_photo = ImageTk.PhotoImage(img)
+                    self.iconphoto(False, self.icon_photo)
+            except Exception as e:
+                print(f"Không thể thiết lập icon cửa sổ: {e}")
+
+        # Chạy sau 200ms để đảm bảo CustomTkinter đã khởi tạo xong cửa sổ
+        self.after(200, apply_icon)
+
+

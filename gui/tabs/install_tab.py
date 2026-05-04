@@ -27,9 +27,10 @@ class InstallTab(ctk.CTkFrame):
         self.scroll_frame.grid_columnconfigure(1, weight=1, uniform="column")
         self.scroll_frame.grid_columnconfigure(2, weight=1, uniform="column")
 
-        # Bottom Frame
-        self.bottom_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.bottom_frame.pack(side="bottom", fill="both", expand=True, padx=20, pady=(5, 10))
+        # Bottom Frame (Cố định chiều cao để không chiếm quá nhiều không gian)
+        self.bottom_frame = ctk.CTkFrame(self, fg_color="transparent", height=280)
+        self.bottom_frame.pack(side="bottom", fill="x", padx=20, pady=(5, 10))
+        self.bottom_frame.pack_propagate(False)
 
         btn_frame = ctk.CTkFrame(self.bottom_frame, fg_color="transparent")
         btn_frame.pack(fill="x", padx=5, pady=5)
@@ -68,8 +69,8 @@ class InstallTab(ctk.CTkFrame):
         self.log_scroll_frame.pack(fill="both", expand=True)
         
         # Cấu hình grid cho log_scroll_frame
-        self.log_scroll_frame.grid_columnconfigure(0, minsize=100) # Cố định 100px cho Timestamp
-        self.log_scroll_frame.grid_columnconfigure(1, minsize=100) # Cố định 100px cho Status
+        self.log_scroll_frame.grid_columnconfigure(0, minsize=80) # Thu gọn còn 80px cho Timestamp
+        self.log_scroll_frame.grid_columnconfigure(1, minsize=80) # Thu gọn còn 80px cho Status
         self.log_scroll_frame.grid_columnconfigure(2, weight=1)    # Nội dung co giãn
         
         self.log_row_count = 0
@@ -109,15 +110,15 @@ class InstallTab(ctk.CTkFrame):
             content = data
             
         # Tạo row frame (Cố định layout)
-        row_frame = ctk.CTkFrame(self.log_scroll_frame, fg_color="transparent", corner_radius=0, height=28)
+        row_frame = ctk.CTkFrame(self.log_scroll_frame, fg_color="transparent", corner_radius=0, height=22)
         row_frame.grid(row=self.log_row_count, column=0, columnspan=3, sticky="ew")
-        row_frame.grid_columnconfigure(0, minsize=100)
-        row_frame.grid_columnconfigure(1, minsize=100)
+        row_frame.grid_columnconfigure(0, minsize=80)
+        row_frame.grid_columnconfigure(1, minsize=80)
         row_frame.grid_columnconfigure(2, weight=1)
         row_frame.pack_propagate(False)
 
         # Cột 1: Timestamp (Căn trái)
-        ctk.CTkLabel(row_frame, text=timestamp, font=Styles.FONT_LOG, text_color=Styles.TEXT_SECONDARY).grid(row=0, column=0, padx=(5, 15), sticky="w")
+        ctk.CTkLabel(row_frame, text=timestamp, font=Styles.FONT_LOG, text_color=Styles.TEXT_SECONDARY).grid(row=0, column=0, padx=(5, 5), sticky="w")
         
         # Cột 2: Status (Căn trái + In đậm)
         ctk.CTkLabel(row_frame, text=status, font=Styles.FONT_LOG_BOLD, text_color=status_color).grid(row=0, column=1, padx=0, sticky="w")
