@@ -1,4 +1,4 @@
 {
-    "python.defaultInterpreterPath": "${workspaceFolder}/venv/Scripts/python.exe",
+    "python.defaultInterpreterPath": "d:\\Source_App_Tu_Dong_v2\\Auto-Installer\\venv\\Scripts\\python.exe",
     "python.terminal.activateEnvironment": false
 }

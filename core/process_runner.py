@@ -6,6 +6,32 @@ import time
 import winsound
 import sys
 
+def get_silent_args(filepath):
+    if filepath.lower().endswith('.msi'):
+        return ["/qn", "/norestart"]
+    try:
+        with open(filepath, 'rb') as f:
+            header = f.read(1024 * 1024 * 2)
+            file_size = os.path.getsize(filepath)
+            if file_size > 1024 * 1024 * 2:
+                f.seek(file_size - 1024 * 1024 * 2)
+                footer = f.read()
+            else:
+                footer = b""
+            content = header + footer
+            
+            if b'Inno Setup' in content or b'InnoSetup' in content:
+                return ["/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART"]
+            if b'NullsoftInst' in content or b'NSIS' in content:
+                return ["/S"]
+            if b'InstallShield' in content:
+                return ["/s", '/v"/qn"']
+            if b'WiX' in content or b'wix' in content:
+                return ["/quiet"]
+    except:
+        pass
+    return []
+
 def run_installation(checked_apps, log_func, progress_func, complete_func):
     def run():
         time.sleep(0.1)
@@ -91,21 +117,21 @@ def run_installation(checked_apps, log_func, progress_func, complete_func):
                     else:
                         log_func({"status": "ERROR", "msg": f"Không thể mount file ISO {name}."})
                         result = subprocess.CompletedProcess(args=[], returncode=1)
+                elif "zalo" in exe_lower or "zalo" in name_lower:
+                    log_func({"status": "INFO", "msg": f"Đang cài đặt Zalo ở chế độ im lặng..."})
+                    result = subprocess.run([exe_path, "/S"], check=False, cwd=os.path.dirname(exe_path))
                 else:
-                    log_func({"status": "INFO", "msg": f"Đang cài đặt {name}..."})
-                    try:
-                        result = subprocess.run(
-                            [
-                                exe_path,
-                                "/silent", "/verysilent", "/S", "/quiet", "/qn", "/s", "/NORESTART", "/SUPPRESSMSGBOXES",
-                                "-s", "/passive", "--silent", "--quiet", "-silent", "-quiet", "--unattended",
-                                "/extract", "--mode=silent"
-                            ],
-                            check=False,
-                            cwd=os.path.dirname(exe_path)
-                        )
-                    except:
-                        result = subprocess.run([exe_path], check=False, cwd=os.path.dirname(exe_path))
+                    # Tự động đọc file để nhận diện kiểu cài đặt
+                    silent_args = get_silent_args(exe_path)
+                    
+                    if silent_args:
+                        log_func({"status": "INFO", "msg": f"Tự động nhận diện cấu hình ({' '.join(silent_args)}), đang cài đặt {name}..."})
+                        cmd = [exe_path] + silent_args
+                    else:
+                        log_func({"status": "INFO", "msg": f"Đang cài đặt {name} (Chế độ thủ công)..."})
+                        cmd = [exe_path]
+
+                    result = subprocess.run(cmd, check=False, cwd=os.path.dirname(exe_path))
 
                 # Kiểm tra kết quả sau khi cài đặt
                 if result:
