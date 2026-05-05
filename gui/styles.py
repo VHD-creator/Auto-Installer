@@ -18,8 +18,8 @@ class Styles:
     FONT_DESC = (FONT_FAMILY_MAIN, 11)
     FONT_INFO = (FONT_FAMILY_MAIN, 14)
     
-    FONT_LOG = (FONT_FAMILY_MONO, 12)
-    FONT_LOG_BOLD = (FONT_FAMILY_MONO, 12, "bold")
+    FONT_LOG = (FONT_FAMILY_MONO, 14)
+    FONT_LOG_BOLD = (FONT_FAMILY_MONO, 14, "bold")
 
 
     # Colors (Optional: can be expanded if needed)

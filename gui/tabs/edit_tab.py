@@ -2,9 +2,10 @@ import os
 import sys
 import json
 import shutil
+import winsound
 import customtkinter as ctk
 from tkinter import messagebox, filedialog
-from core.config_manager import load_config
+from core.config_manager import load_config, save_config
 from gui.overlays.edit_overlay import EditOverlay
 from gui.styles import Styles
 from core.asset_manager import AssetManager
@@ -40,6 +41,12 @@ class EditTab(ctk.CTkFrame):
         )
         self.btn_add_app.pack(side="left", padx=5)
 
+        self.dragged_widget = None
+        self.dragged_index = -1
+        self.drag_start_y = 0
+        self.row_widgets = []
+        self.current_apps = []
+
         self.load_edit_app_list()
 
     def load_edit_app_list(self):
@@ -47,14 +54,15 @@ class EditTab(ctk.CTkFrame):
             widget.destroy()
             
         self.edit_vars = []
-        current_apps = load_config()
+        self.row_widgets = []
+        self.current_apps = load_config()
 
         # Định nghĩa bảng màu đồng bộ với AppCard
         color_row_bg = ("#ffffff", "#161b22")
         color_row_border = ("#d0d7de", "#30363d")
         color_row_hover = ("#f6f8fa", "#1f242c")
 
-        for i, app in enumerate(current_apps):
+        for i, app in enumerate(self.current_apps):
             name = app.get("name", "Unknown")
             exe = app.get("exe", "")
 
@@ -71,6 +79,14 @@ class EditTab(ctk.CTkFrame):
             row_frame.pack(fill="x", padx=10, pady=5)
 
             original_bg = row_frame.cget("fg_color")
+
+            # Drag Handle
+            drag_handle = ctk.CTkLabel(row_frame, text="☰", font=(Styles.FONT_FAMILY_MAIN, 20), text_color="gray50", cursor="fleur", width=30)
+            drag_handle.pack(side="left", padx=(10, 0))
+            
+            drag_handle.bind("<ButtonPress-1>", lambda e, idx=i, w=row_frame: self.on_drag_start(e, idx, w))
+            drag_handle.bind("<B1-Motion>", self.on_drag_motion)
+            drag_handle.bind("<ButtonRelease-1>", self.on_drag_release)
 
             # 1. App Icon
             icon_name = app.get("icon", "")
@@ -129,6 +145,52 @@ class EditTab(ctk.CTkFrame):
             row_frame.bind("<Enter>", handle_enter)
             row_frame.bind("<Leave>", handle_leave)
 
+            self.row_widgets.append(row_frame)
+
+    def on_drag_start(self, event, idx, widget):
+        self.dragged_index = idx
+        self.dragged_widget = widget
+        self.drag_start_y = event.y_root
+        widget.configure(border_color=Styles.COLOR_PRIMARY, border_width=2)
+        
+    def on_drag_motion(self, event):
+        if not self.dragged_widget: return
+        
+        current_y = event.y_root
+        target_index = -1
+        
+        for i, w in enumerate(self.row_widgets):
+            w_y = w.winfo_rooty()
+            w_h = w.winfo_height()
+            if w_y <= current_y <= w_y + w_h:
+                target_index = i
+                break
+                
+        if target_index != -1 and target_index != self.dragged_index:
+            self.row_widgets[self.dragged_index], self.row_widgets[target_index] = self.row_widgets[target_index], self.row_widgets[self.dragged_index]
+            self.current_apps[self.dragged_index], self.current_apps[target_index] = self.current_apps[target_index], self.current_apps[self.dragged_index]
+            
+            for w in self.row_widgets:
+                w.pack_forget()
+            for w in self.row_widgets:
+                w.pack(fill="x", padx=10, pady=5)
+                
+            self.dragged_index = target_index
+
+    def on_drag_release(self, event):
+        if not self.dragged_widget: return
+        
+        color_row_border = ("#d0d7de", "#30363d")
+        self.dragged_widget.configure(border_color=color_row_border, border_width=1)
+        self.dragged_widget = None
+        
+        save_config(self.current_apps)
+        
+        self.load_edit_app_list()
+        
+        if self.on_data_changed_callback:
+            self.on_data_changed_callback()
+
     def open_add_overlay(self):
         EditOverlay(
             self.master.master, 
@@ -150,6 +212,7 @@ class EditTab(ctk.CTkFrame):
         )
 
     def delete_single_app(self, app_idx):
+        winsound.MessageBeep(winsound.MB_ICONEXCLAMATION)
         if messagebox.askyesno("Xác nhận", "Bạn có chắc chắn muốn xóa ứng dụng này?"):
             try:
                 base_path = os.path.dirname(os.path.realpath(sys.argv[0]))
@@ -179,10 +242,22 @@ class EditTab(ctk.CTkFrame):
                 if exe_name:
                     other_exes = [app.get("exe") for app in config_data["apps"]]
                     if exe_name not in other_exes:
-                        exe_path = os.path.join(base_path, "installers", exe_name)
-                        if os.path.exists(exe_path):
-                            try: os.remove(exe_path)
-                            except: pass
+                        if "/" in exe_name or "\\" in exe_name:
+                            exe_dir = os.path.dirname(exe_name).replace("\\", "/")
+                            is_dir_used = any(
+                                (app.get("exe") or "").replace("\\", "/").startswith(exe_dir + "/")
+                                for app in config_data["apps"]
+                            )
+                            if not is_dir_used:
+                                full_dir_path = os.path.join(base_path, "installers", exe_dir)
+                                if os.path.exists(full_dir_path) and os.path.isdir(full_dir_path):
+                                    try: shutil.rmtree(full_dir_path)
+                                    except: pass
+                        else:
+                            exe_path = os.path.join(base_path, "installers", exe_name)
+                            if os.path.exists(exe_path):
+                                try: os.remove(exe_path)
+                                except: pass
                 
                 # 5. Lưu lại config
                 with open(config_path, "w", encoding="utf-8") as f:

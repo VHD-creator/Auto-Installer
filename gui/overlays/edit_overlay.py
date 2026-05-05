@@ -3,6 +3,7 @@ import shutil
 import json
 import sys
 import threading
+import winsound
 import customtkinter as ctk
 from tkinter import messagebox, filedialog
 from PIL import Image
@@ -186,6 +187,7 @@ class EditOverlay(ctk.CTkFrame):
             try:
                 other_files = [f for f in os.listdir(file_dir) if f != os.path.basename(f_path) and os.path.isfile(os.path.join(file_dir, f))]
                 if other_files:
+                    winsound.MessageBeep(winsound.MB_ICONEXCLAMATION)
                     ans = messagebox.askyesno("Copy toàn bộ thư mục?", "Thư mục chứa file này còn có các file khác (có thể là file phụ trợ).\nBạn có muốn copy TOÀN BỘ thư mục này vào phần mềm không?")
                     self.copy_whole_folder = ans
                 else:
@@ -245,6 +247,8 @@ class EditOverlay(ctk.CTkFrame):
                         file_path = self.selected_file_path[0]
                         filename = os.path.basename(file_path)
 
+                        old_file_name = data["apps"][self.idx].get("exe")
+
                         if getattr(self, "copy_whole_folder", False):
                             safe_folder_name = "".join([c for c in new_name if c.isalnum() or c in (" ", "-", "_")]).strip()
                             if not safe_folder_name: safe_folder_name = f"app_{self.idx}"
@@ -255,15 +259,30 @@ class EditOverlay(ctk.CTkFrame):
                             data["apps"][self.idx]["exe"] = f"{safe_folder_name}/{filename}"
                         else:
                             dest_path = os.path.join(installers_dir, filename)
-                            old_file_name = data["apps"][self.idx].get("exe")
-                            if old_file_name and old_file_name != filename:
-                                old_file_full = os.path.join(installers_dir, old_file_name)
-                                if os.path.exists(old_file_full) and os.path.isfile(old_file_full):
-                                    try: os.remove(old_file_full)
-                                    except: pass
                             if not os.path.exists(dest_path):
                                 shutil.copy2(file_path, dest_path)
                             data["apps"][self.idx]["exe"] = filename
+
+                        new_file_name = data["apps"][self.idx]["exe"]
+                        if old_file_name and old_file_name != new_file_name:
+                            other_exes = [app.get("exe") for i, app in enumerate(data["apps"]) if i != self.idx]
+                            if old_file_name not in other_exes:
+                                if "/" in old_file_name or "\\" in old_file_name:
+                                    old_exe_dir = os.path.dirname(old_file_name).replace("\\", "/")
+                                    is_dir_used = any(
+                                        (app.get("exe") or "").replace("\\", "/").startswith(old_exe_dir + "/")
+                                        for i, app in enumerate(data["apps"]) if i != self.idx
+                                    )
+                                    if not is_dir_used:
+                                        full_dir_path = os.path.join(installers_dir, old_exe_dir)
+                                        if os.path.exists(full_dir_path) and os.path.isdir(full_dir_path):
+                                            try: shutil.rmtree(full_dir_path)
+                                            except: pass
+                                else:
+                                    old_file_full = os.path.join(installers_dir, old_file_name)
+                                    if os.path.exists(old_file_full) and os.path.isfile(old_file_full):
+                                        try: os.remove(old_file_full)
+                                        except: pass
                     
                     # Handle Icon Update
                     if self.icon_deleted:

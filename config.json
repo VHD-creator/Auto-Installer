@@ -1,27 +1,6 @@
 {
     "apps": [
         {
-            "name": "WinRAR",
-            "description": "Phần mềm nén và giải nén file mạnh mẽ",
-            "exe": "3winrar.exe",
-            "type": "install",
-            "icon": "winrar.png"
-        },
-        {
-            "name": "Google Chrome",
-            "description": "Trình duyệt web nhanh chóng, bảo mật",
-            "exe": "ChromeSetup.exe",
-            "type": "install",
-            "icon": "chrome.png"
-        },
-        {
-            "name": "Foxit PDF Reader",
-            "description": "Hỗ trợ đọc và chỉnh sửa file PDF",
-            "exe": "FoxitPDFReader_x64.exe",
-            "type": "install",
-            "icon": "foxit.png"
-        },
-        {
             "name": "Microsoft Office 2019",
             "description": "Bộ ứng dụng văn phòng bản quyền",
             "exe": "Office2019ProPlus.exe",
@@ -34,6 +13,27 @@
             "exe": "setup.exe",
             "type": "install",
             "icon": "office365.png"
+        },
+        {
+            "name": "Google Chrome",
+            "description": "Trình duyệt web nhanh chóng, bảo mật",
+            "exe": "ChromeSetup.exe",
+            "type": "install",
+            "icon": "chrome.png"
+        },
+        {
+            "name": "WinRAR",
+            "description": "Phần mềm nén và giải nén file mạnh mẽ",
+            "exe": "3winrar.exe",
+            "type": "install",
+            "icon": "winrar.png"
+        },
+        {
+            "name": "Foxit PDF Reader",
+            "description": "Hỗ trợ đọc và chỉnh sửa file PDF",
+            "exe": "FoxitPDFReader_x64.exe",
+            "type": "install",
+            "icon": "foxit.png"
         },
         {
             "name": "UltraViewer",
