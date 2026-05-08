@@ -9,25 +9,33 @@ class InfoTab(ctk.CTkFrame):
         info_card.pack(fill="both", padx=40, pady=20, expand=True)
 
         about_text = """
-Auto Install Tool là công cụ hỗ trợ cài đặt ứng dụng hàng loạt một cách nhanh chóng và tự động.
-Phiên bản 2.1.0 (CustomTkinter Edition) mang đến trải nghiệm hiện đại với khả năng cài đặt im lặng,
-giúp người dùng không cần thao tác thủ công như nhấn "Next" nhiều lần. 
+Auto Install Tool là giải pháp hàng đầu hỗ trợ cài đặt ứng dụng hàng loạt một cách nhanh chóng, chính xác và hoàn toàn tự động. 
+Phiên bản 2.4.0 (CustomTkinter Edition) là một bước nhảy vọt về công nghệ, mang đến trải nghiệm cài đặt "một chạm" đỉnh cao cho cả người dùng cá nhân và kỹ thuật viên chuyên nghiệp.
 
-Một số file đuôi iso, bat hoặc cmd sẽ không cài im lặng mà sẽ hiện GUI lên cho người dùng thao tác dễ dàng.
+🌟 CÁC TÍNH NĂNG MỚI NỔI BẬT TRÊN V2.4:
 
-Ứng dụng cho phép tùy chỉnh linh hoạt thông qua file cấu hình config.json,
-phù hợp cho cả người dùng cá nhân lẫn kỹ thuật viên.
+🚀 HỆ THỐNG NHẬN DIỆN "ULTRA-SMART":
+Tự động trích xuất Metadata và ProductCode từ lõi file .exe, .msi để đưa ra tham số cài đặt Silent (im lặng) với độ chính xác tuyệt đối.
 
-🌟 CÁC TÍNH NĂNG MỚI NỔI BẬT:
-• Hỗ trợ đa dạng file cài đặt: Bổ sung khả năng chạy file .bat, .cmd và tự động mount ổ đĩa ảo cho file .iso.
-• Tùy chỉnh ứng dụng: Thêm trường Mô tả chi tiết cho ứng dụng, đồng thời hỗ trợ thay đổi hoặc xóa Icon (ảnh đại diện).
-• Sắp xếp ứng dụng: Tùy ý sắp xếp thứ tự cài đặt của các ứng dụng. 
-• Quản lý dữ liệu thông minh: Xử lý và dọn dẹp sạch sẽ thư mục ứng dụng khi người dùng quyết định xóa phần mềm.
-• Tối ưu hóa trải nghiệm: Các tác vụ nặng (như sao chép thư mục lớn) được chạy ngầm giúp giao diện mượt mà, không bị treo.
-• Cảnh báo người dùng chạy quyền Admin cho Unikey để đảm bảo gõ tiếng Việt không bị lỗi.
-• Cải thiện giao diện đẹp mắt dễ dùng hơn
+🔍 CÔNG NGHỆ "DEEP SCAN":
+Khả năng nhận diện sâu các bộ cài nén SFX (7-Zip, WinRAR), WiX Burn và các loại Wrapper phức tạp chứa MSI bên trong driver.
 
-• Tác giả: Phạm Sự
+🧠 QUẢN LÝ CÀI ĐẶT THÔNG MINH (SMART SKIP):
+Tự động bỏ qua các ứng dụng đã có trên máy bằng thuật toán đối soát Registry và Fuzzy Matching tiên tiến, ngăn chặn tình trạng cài đè lãng phí thời gian.
+
+📂 MỞ RỘNG HỖ TRỢ ĐA ĐỊNH DẠNG:
+Hỗ trợ thực thi script .bat, .cmd và tự động mount đĩa ảo cho file .iso, .img chỉ với một cú click chuột.
+
+🎨 TỐI ƯU HÓA TRẢI NGHIỆM (UX/UI):
+Giao diện hiện đại, hệ thống Log tiếng Việt thời gian thực hiển thị minh bạch mọi tiến trình và tham số cài đặt.
+
+⚡ HIỆU NĂNG VÀ BẢO MẬT:
+Xử lý đa luồng (Multithreading) giúp ứng dụng luôn mượt mà. Cơ chế ngăn chặn đa tiến trình và kiểm tra quyền Admin đảm bảo môi trường cài đặt an toàn nhất.
+
+🧹 QUẢN LÝ DỮ LIỆU SẠCH:
+Tự động dọn dẹp rác dữ liệu và tối ưu hóa file cấu hình khi thay đổi danh sách ứng dụng.
+
+Tác giả: Phạm Sự
 Cảm ơn bạn đã tin tưởng và sử dụng sản phẩm!
 """
         info_desc = ctk.CTkTextbox(info_card, font=Styles.FONT_INFO, wrap="word", fg_color="transparent", text_color=Styles.TEXT_PRIMARY)

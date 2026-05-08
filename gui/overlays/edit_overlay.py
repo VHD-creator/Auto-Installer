@@ -1,4 +1,5 @@
 import os
+import time
 import shutil
 import json
 import sys
@@ -20,9 +21,19 @@ class EditOverlay(ctk.CTkFrame):
         self.on_success_callback = on_success_callback
         self.log_func = log_func if log_func else print
         self.icon_deleted = False
-        self.copy_whole_folder = False
+        self.copy_mode = "single"  # "single", "whole", "smart_office"
+        self.dependencies = []
         
         self.place(relx=0, rely=0, relwidth=1, relheight=1)
+        
+        # Khoá điều hướng tab và chặn toàn bộ tương tác khi overlay đang hiển thị
+        def _lock_ui():
+            toplevel = self.winfo_toplevel()
+            toplevel.grab_set()
+            # Tìm sidebar (thuộc tính .sidebar của MainApp)
+            if hasattr(toplevel, "sidebar"):
+                toplevel.sidebar.lock()
+        self.after(50, _lock_ui)
         
         # Center Frame
         center_frame = ctk.CTkFrame(
@@ -174,26 +185,65 @@ class EditOverlay(ctk.CTkFrame):
         )
         self.btn_cancel.pack(side="right", padx=(10, 0), expand=True, fill="x")
 
+    def destroy(self):
+        """Giải phóng focus modal và mở khoá tab sidebar trước khi đóng overlay."""
+        try:
+            toplevel = self.winfo_toplevel()
+            # Mở khoá tab navigation trước
+            if hasattr(toplevel, "sidebar"):
+                toplevel.sidebar.unlock()
+            toplevel.grab_release()
+        except Exception:
+            pass
+        super().destroy()
+
     def pick_file(self):
         f_path = filedialog.askopenfilename(
             title="Chọn file cài đặt",
-            filetypes=[("Install Files", "*.exe *.msi *.iso *.cmd *.bat"), ("All Files", "*.*")]
+            filetypes=[("Install Files", "*.exe *.msi *.iso *.img *.cmd *.bat *.xml"), ("All Files", "*.*")]
         )
         if f_path:
             self.selected_file_path[0] = f_path
             self.exe_label.configure(text=f"File mới: {os.path.basename(f_path)}")
             
             file_dir = os.path.dirname(f_path)
+            fname_lower = os.path.basename(f_path).lower()
+            
+            # Reset state
+            self.copy_mode = "single"
+            self.dependencies = []
+
             try:
-                other_files = [f for f in os.listdir(file_dir) if f != os.path.basename(f_path) and os.path.isfile(os.path.join(file_dir, f))]
-                if other_files:
+                # 1. Kiểm tra trường hợp đặc biệt: Office Deployment Tool (ODT)
+                if fname_lower == "setup.exe" or fname_lower.endswith(".xml"):
+                    has_setup = os.path.exists(os.path.join(file_dir, "setup.exe"))
+                    has_office_folder = os.path.exists(os.path.join(file_dir, "Office"))
+                    # Tìm file XML cấu hình (ưu tiên file user chọn hoặc tìm file .xml bất kỳ)
+                    xml_files = [f for f in os.listdir(file_dir) if f.lower().endswith(".xml")]
+                    
+                    if has_setup and (has_office_folder or xml_files):
+                        winsound.MessageBeep(winsound.MB_ICONEXCLAMATION)
+                        msg = "Phát hiện bộ cài Office ODT.\nBạn có muốn tự động lấy các file liên quan (setup.exe, xml, folder Office) không?\n\n(Chỉ lấy file cần thiết, không lấy cả thư mục)"
+                        if messagebox.askyesno("Bộ cài Office", msg):
+                            self.copy_mode = "smart_office"
+                            # Danh sách các file/thư mục cần copy
+                            self.dependencies = ["setup.exe"]
+                            if has_office_folder: self.dependencies.append("Office")
+                            if fname_lower.endswith(".xml"):
+                                self.dependencies.append(os.path.basename(f_path))
+                            else:
+                                self.dependencies.extend(xml_files)
+                            return
+
+                # 2. Trường hợp thông thường: Hỏi nếu có các file khác
+                other_items = os.listdir(file_dir)
+                if len(other_items) > 1:
                     winsound.MessageBeep(winsound.MB_ICONEXCLAMATION)
                     ans = messagebox.askyesno("Copy toàn bộ thư mục?", "Thư mục chứa file này còn có các file khác (có thể là file phụ trợ).\nBạn có muốn copy TOÀN BỘ thư mục này vào phần mềm không?")
-                    self.copy_whole_folder = ans
-                else:
-                    self.copy_whole_folder = False
+                    if ans:
+                        self.copy_mode = "whole"
             except Exception:
-                self.copy_whole_folder = False
+                pass
 
     def pick_icon(self):
         f_path = filedialog.askopenfilename(
@@ -226,6 +276,47 @@ class EditOverlay(ctk.CTkFrame):
             messagebox.showwarning("Cảnh báo", "Vui lòng chọn file cài đặt!")
             return
 
+        # ── Kiểm tra trùng lặp khi THÊM MỚI ─────────────────────────────────
+        if self.idx is None:
+            try:
+                base_path = os.path.dirname(os.path.realpath(sys.argv[0]))
+                config_path = os.path.join(base_path, "config.json")
+                with open(config_path, "r", encoding="utf-8") as f:
+                    existing_apps = json.load(f).get("apps", [])
+
+                new_filename = os.path.basename(self.selected_file_path[0]) if self.selected_file_path[0] else ""
+
+                # Kiểm tra trùng TÊN ứng dụng (so sánh không phân biệt hoa/thường)
+                dup_name = next(
+                    (a for a in existing_apps if a.get("name", "").strip().lower() == new_name.lower()),
+                    None
+                )
+                if dup_name:
+                    messagebox.showerror(
+                        "Trùng tên ứng dụng",
+                        f"Đã tồn tại ứng dụng có tên \"{dup_name['name']}\" trong danh sách.\n\n"
+                        "Vui lòng đặt tên khác hoặc chỉnh sửa ứng dụng đã có."
+                    )
+                    return
+
+                # Kiểm tra trùng FILE cài đặt
+                dup_file = next(
+                    (a for a in existing_apps
+                     if os.path.basename(a.get("exe", "")).lower() == new_filename.lower()),
+                    None
+                )
+                if dup_file:
+                    messagebox.showerror(
+                        "Trùng file cài đặt",
+                        f"File \"{new_filename}\" đã được dùng bởi ứng dụng \"{dup_file['name']}\".\n\n"
+                        "Vui lòng chọn file khác hoặc chỉnh sửa ứng dụng đã có."
+                    )
+                    return
+
+            except Exception:
+                pass  # Nếu không đọc được config thì bỏ qua kiểm tra, để save_process xử lý lỗi
+        # ─────────────────────────────────────────────────────────────────────
+
         self.btn_confirm.configure(state="disabled", text="Đang xử lý...")
         self.btn_cancel.configure(state="disabled")
 
@@ -248,11 +339,30 @@ class EditOverlay(ctk.CTkFrame):
                         filename = os.path.basename(file_path)
 
                         old_file_name = data["apps"][self.idx].get("exe")
+                        
+                        safe_folder_name = "".join([c for c in new_name if c.isalnum() or c in (" ", "-", "_")]).strip()
+                        if not safe_folder_name: safe_folder_name = f"app_{self.idx}"
+                        dest_dir = os.path.join(installers_dir, safe_folder_name)
 
-                        if getattr(self, "copy_whole_folder", False):
-                            safe_folder_name = "".join([c for c in new_name if c.isalnum() or c in (" ", "-", "_")]).strip()
-                            if not safe_folder_name: safe_folder_name = f"app_{self.idx}"
-                            dest_dir = os.path.join(installers_dir, safe_folder_name)
+                        if self.copy_mode == "smart_office":
+                            if os.path.exists(dest_dir):
+                                for _ in range(3):
+                                    try:
+                                        shutil.rmtree(dest_dir, ignore_errors=True)
+                                        if not os.path.exists(dest_dir): break
+                                        time.sleep(0.5)
+                                    except: pass
+                            os.makedirs(dest_dir, exist_ok=True)
+                            for dep in self.dependencies:
+                                src_dep = os.path.join(os.path.dirname(file_path), dep)
+                                if os.path.exists(src_dep):
+                                    if os.path.isdir(src_dep):
+                                        shutil.copytree(src_dep, os.path.join(dest_dir, dep))
+                                    else:
+                                        shutil.copy2(src_dep, dest_dir)
+                            data["apps"][self.idx]["exe"] = f"{safe_folder_name}/{filename}"
+
+                        elif self.copy_mode == "whole":
                             if os.path.exists(dest_dir):
                                 shutil.rmtree(dest_dir, ignore_errors=True)
                             shutil.copytree(os.path.dirname(file_path), dest_dir)
@@ -326,10 +436,28 @@ class EditOverlay(ctk.CTkFrame):
                     file_path = self.selected_file_path[0]
                     filename = os.path.basename(file_path)
                     
-                    if getattr(self, "copy_whole_folder", False):
-                        safe_folder_name = "".join([c for c in new_name if c.isalnum() or c in (" ", "-", "_")]).strip()
-                        if not safe_folder_name: safe_folder_name = "new_app"
-                        dest_dir = os.path.join(installers_dir, safe_folder_name)
+                    safe_folder_name = "".join([c for c in new_name if c.isalnum() or c in (" ", "-", "_")]).strip()
+                    if not safe_folder_name: safe_folder_name = "new_app"
+                    dest_dir = os.path.join(installers_dir, safe_folder_name)
+
+                    if self.copy_mode == "smart_office":
+                        if os.path.exists(dest_dir):
+                            for _ in range(3):
+                                try:
+                                    shutil.rmtree(dest_dir, ignore_errors=True)
+                                    if not os.path.exists(dest_dir): break
+                                    time.sleep(0.5)
+                                except: pass
+                        os.makedirs(dest_dir, exist_ok=True)
+                        for dep in self.dependencies:
+                            src_dep = os.path.join(os.path.dirname(file_path), dep)
+                            if os.path.exists(src_dep):
+                                if os.path.isdir(src_dep):
+                                    shutil.copytree(src_dep, os.path.join(dest_dir, dep))
+                                else:
+                                    shutil.copy2(src_dep, dest_dir)
+                        saved_exe = f"{safe_folder_name}/{filename}"
+                    elif self.copy_mode == "whole":
                         if os.path.exists(dest_dir):
                             shutil.rmtree(dest_dir, ignore_errors=True)
                         shutil.copytree(os.path.dirname(file_path), dest_dir)
@@ -376,10 +504,11 @@ class EditOverlay(ctk.CTkFrame):
 
                 self.after(0, on_success)
             except Exception as e:
-                self.log_func(f"[ERROR] Không thể lưu thay đổi: {e}")
+                err_msg = str(e)  # Lưu lại trước khi 'e' bị Python xóa sau khi thoát except block
+                self.log_func(f"[ERROR] Không thể lưu thay đổi: {err_msg}")
                 
-                def on_error():
-                    messagebox.showerror("Lỗi", f"Lỗi lưu cấu hình: {e}")
+                def on_error(msg=err_msg):
+                    messagebox.showerror("Lỗi", f"Lỗi lưu cấu hình: {msg}")
                     self.btn_confirm.configure(state="normal", text="Xác nhận")
                     self.btn_cancel.configure(state="normal")
                 

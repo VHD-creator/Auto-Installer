@@ -44,6 +44,25 @@ class MainApp(ctk.CTk):
         # Mặc định mở Install Tab
         self.switch_tab("install")
 
+        # Hook nút X của cửa sổ
+        self.protocol("WM_DELETE_WINDOW", self.on_close)
+
+    def on_close(self):
+        """Xử lý khi người dùng bấm nút X đóng cửa sổ."""
+        from tkinter import messagebox
+        if self.install_tab.is_installing:
+            # Đang cài đặt — cảnh báo mạnh, hỏi xác nhận 2 lần
+            answer = messagebox.askyesno(
+                "⚠️ Đang cài đặt!",
+                "Đang thực hiện cài đặt! Thoát ngay bây giờ có thể gây lỗi hoặc xung đột.\n\nBạn vẫn muốn thoát chứ?",
+                icon="warning"
+            )
+            if answer:
+                self.destroy()
+        else:
+            self.destroy()
+
+
     def switch_tab(self, tab_name):
         self.sidebar.select_tab(tab_name)
         self.install_tab.pack_forget()
@@ -53,7 +72,7 @@ class MainApp(ctk.CTk):
         if tab_name == "install":
             self.header.set_title("CHỌN ỨNG DỤNG CẦN CÀI ĐẶT")
             self.install_tab.pack(fill="both", expand=True)
-            self.install_tab.load_app_list()
+            # Không tự động load_app_list ở đây để giữ nguyên trạng thái chọn app
         elif tab_name == "edit":
             self.header.set_title("QUẢN LÝ & CHỈNH SỬA ỨNG DỤNG")
             self.edit_tab.pack(fill="both", expand=True)
@@ -61,6 +80,10 @@ class MainApp(ctk.CTk):
         elif tab_name == "info":
             self.header.set_title("VỀ ỨNG DỤNG")
             self.info_tab.pack(fill="both", expand=True)
+
+    def set_navigation_locked(self, locked):
+        """Khoá hoặc mở khoá tab Chỉnh sửa."""
+        self.sidebar.set_edit_tab_enabled(not locked)
 
     def _set_window_icon(self):
         def apply_icon():

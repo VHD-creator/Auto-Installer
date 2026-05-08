@@ -10,7 +10,10 @@ def is_admin():
 
 def elevate_admin():
     if not is_admin():
-        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+        import subprocess
+        # Sử dụng list2cmdline để đảm bảo các đối số có khoảng trắng được bọc quote đúng cách
+        params = subprocess.list2cmdline(sys.argv)
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, params, None, 1)
         sys.exit()
 
 # Kiểm tra Single Instance

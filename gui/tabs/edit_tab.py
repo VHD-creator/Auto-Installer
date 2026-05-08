@@ -78,8 +78,6 @@ class EditTab(ctk.CTkFrame):
             row_frame.pack_propagate(False)
             row_frame.pack(fill="x", padx=10, pady=5)
 
-            original_bg = row_frame.cget("fg_color")
-
             # Drag Handle
             drag_handle = ctk.CTkLabel(row_frame, text="☰", font=(Styles.FONT_FAMILY_MAIN, 20), text_color="gray50", cursor="fleur", width=30)
             drag_handle.pack(side="left", padx=(10, 0))
@@ -213,61 +211,103 @@ class EditTab(ctk.CTkFrame):
 
     def delete_single_app(self, app_idx):
         winsound.MessageBeep(winsound.MB_ICONEXCLAMATION)
-        if messagebox.askyesno("Xác nhận", "Bạn có chắc chắn muốn xóa ứng dụng này?"):
-            try:
-                base_path = os.path.dirname(os.path.realpath(sys.argv[0]))
-                config_path = os.path.join(base_path, "config.json")
-                
-                with open(config_path, "r", encoding="utf-8") as f:
-                    config_data = json.load(f)
-                
-                # 1. Lấy thông tin app trước khi xóa
-                app_to_delete = config_data["apps"][app_idx]
-                icon_name = app_to_delete.get("icon")
-                exe_name = app_to_delete.get("exe")
-                
-                # 2. Xóa khỏi config
-                config_data["apps"].pop(app_idx)
-                
-                # 3. Xóa file icon nếu không còn app nào dùng chung
-                if icon_name:
-                    other_icons = [app.get("icon") for app in config_data["apps"]]
-                    if icon_name not in other_icons:
-                        icon_path = os.path.join(base_path, "gui", "assets", "apps", icon_name)
-                        if os.path.exists(icon_path):
-                            try: os.remove(icon_path)
-                            except: pass
-                            
-                # 4. Xóa file bộ cài trong installers nếu không còn app nào dùng chung
-                if exe_name:
-                    other_exes = [app.get("exe") for app in config_data["apps"]]
-                    if exe_name not in other_exes:
-                        if "/" in exe_name or "\\" in exe_name:
-                            exe_dir = os.path.dirname(exe_name).replace("\\", "/")
-                            is_dir_used = any(
-                                (app.get("exe") or "").replace("\\", "/").startswith(exe_dir + "/")
-                                for app in config_data["apps"]
-                            )
-                            if not is_dir_used:
-                                full_dir_path = os.path.join(base_path, "installers", exe_dir)
-                                if os.path.exists(full_dir_path) and os.path.isdir(full_dir_path):
-                                    try: shutil.rmtree(full_dir_path)
-                                    except: pass
+        if not messagebox.askyesno("Xác nhận", "Bạn có chắc chắn muốn xóa ứng dụng này khỏi danh sách?"):
+            return
+
+        try:
+            base_path = os.path.dirname(os.path.realpath(sys.argv[0]))
+            config_path = os.path.join(base_path, "config.json")
+            installers_dir = os.path.join(base_path, "installers")
+
+            with open(config_path, "r", encoding="utf-8") as f:
+                config_data = json.load(f)
+
+            # 1. Lấy thông tin app trước khi xóa
+            app_to_delete = config_data["apps"][app_idx]
+            icon_name = app_to_delete.get("icon")
+            exe_name  = app_to_delete.get("exe", "")
+
+            # 2. Xóa khỏi config
+            config_data["apps"].pop(app_idx)
+
+            # 3. Xóa file icon nếu không còn app nào dùng chung
+            if icon_name:
+                other_icons = [app.get("icon") for app in config_data["apps"]]
+                if icon_name not in other_icons:
+                    # Dùng AssetManager để đảm bảo đường dẫn đúng cả khi đóng gói .exe
+                    icon_path = os.path.join(AssetManager.ASSETS_DIR, "apps", icon_name)
+                    if os.path.exists(icon_path):
+                        try:
+                            os.remove(icon_path)
+                        except Exception:
+                            pass
+                    AssetManager.clear_cache()
+
+            # 4. Xóa file/thư mục bộ cài nếu không còn app nào dùng chung
+            if exe_name:
+                other_exes = [app.get("exe", "") for app in config_data["apps"]]
+                if exe_name not in other_exes:
+                    exe_lower = exe_name.lower()
+                    is_folder = "/" in exe_name or "\\" in exe_name
+
+                    if is_folder:
+                        # Trường hợp bộ cài nằm trong thư mục con (vd: Office365/setup.exe)
+                        exe_dir = os.path.dirname(exe_name).replace("\\", "/")
+                        is_dir_used = any(
+                            (app.get("exe") or "").replace("\\", "/").startswith(exe_dir + "/")
+                            for app in config_data["apps"]
+                        )
+                        if not is_dir_used:
+                            full_dir_path = os.path.join(installers_dir, exe_dir)
+                            if os.path.exists(full_dir_path) and os.path.isdir(full_dir_path):
+                                winsound.MessageBeep(winsound.MB_ICONEXCLAMATION)
+                                if messagebox.askyesno(
+                                    "Xóa thư mục bộ cài?",
+                                    f"Bạn có muốn xóa luôn thư mục bộ cài '{exe_dir}' khỏi hệ thống không?\n(Không thể khôi phục)"
+                                ):
+                                    try:
+                                        shutil.rmtree(full_dir_path)
+                                    except Exception:
+                                        pass
+                    else:
+                        # Trường hợp file đơn (exe, iso, bat, cmd, msi...)
+                        exe_path = os.path.join(installers_dir, exe_name)
+                        if os.path.exists(exe_path):
+                            winsound.MessageBeep(winsound.MB_ICONEXCLAMATION)
+                            if messagebox.askyesno(
+                                "Xóa file bộ cài?",
+                                f"Bạn có muốn xóa luôn file '{exe_name}' khỏi hệ thống không?\n(Không thể khôi phục)"
+                            ):
+                                try:
+                                    if os.path.isdir(exe_path):
+                                        shutil.rmtree(exe_path)
+                                    else:
+                                        os.remove(exe_path)
+                                    messagebox.showinfo("Thành công", f"Đã xóa file '{exe_name}'.")
+                                except Exception as del_err:
+                                    messagebox.showerror(
+                                        "Không thể xóa file",
+                                        f"Lỗi khi xóa '{exe_name}':\n{del_err}\n\nFile có thể đang được mở hoặc bị khóa bởi chương trình khác."
+                                    )
                         else:
-                            exe_path = os.path.join(base_path, "installers", exe_name)
-                            if os.path.exists(exe_path):
-                                try: os.remove(exe_path)
-                                except: pass
-                
-                # 5. Lưu lại config
-                with open(config_path, "w", encoding="utf-8") as f:
-                    json.dump(config_data, f, indent=4, ensure_ascii=False)
-                
-                self.load_edit_app_list()
-                if self.on_data_changed_callback:
-                    self.on_data_changed_callback()
-            except Exception as e:
-                messagebox.showerror("Lỗi", f"Không thể xóa ứng dụng: {e}")
+                            # File không tồn tại ở đường dẫn mong đợi — thông báo để debug
+                            messagebox.showwarning(
+                                "Không tìm thấy file",
+                                f"Không tìm thấy file bộ cài tại:\n{exe_path}\n\nFile có thể đã bị xóa thủ công trước đó."
+                            )
+
+            # 5. Lưu lại config
+            with open(config_path, "w", encoding="utf-8") as f:
+                json.dump(config_data, f, indent=4, ensure_ascii=False)
+
+            self.load_edit_app_list()
+            if self.on_data_changed_callback:
+                self.on_data_changed_callback()
+
+        except Exception as e:
+            messagebox.showerror("Lỗi", f"Không thể xóa ứng dụng: {e}")
+
+
 
 
     def refresh_all(self):

@@ -19,6 +19,7 @@ class AppCard(ctk.CTkFrame):
         
         self.command = command
         self.selected = False
+        self.enabled = True
         
         # Load Indicator Assets từ AssetManager
         self.img_checked = AssetManager.get_system_icon("check-circle", size=(24, 24))
@@ -66,11 +67,15 @@ class AppCard(ctk.CTkFrame):
             widget.bind("<Leave>", self._on_leave)
 
     def _on_click(self, event=None):
+        if not self.enabled:
+            return
         self.toggle_selection()
         if self.command:
             self.command()
 
     def _on_enter(self, event=None):
+        if not self.enabled:
+            return
         if not self.selected:
             self.configure(border_color=("#afb8c1", "#484f58"), fg_color=self.color_hover)
         
@@ -143,3 +148,16 @@ class AppCard(ctk.CTkFrame):
             
     def is_selected(self):
         return self.selected
+
+    def set_enabled(self, state):
+        self.enabled = state
+        if not state:
+            # Làm mờ chữ khi bị vô hiệu hóa
+            self.name_label.configure(text_color=self.text_secondary)
+            self.desc_label.configure(text_color=self.text_secondary)
+            self.configure(cursor="arrow")
+        else:
+            # Khôi phục màu chữ
+            self.name_label.configure(text_color=self.text_primary)
+            self.desc_label.configure(text_color=self.text_secondary)
+            self.configure(cursor="hand2")
