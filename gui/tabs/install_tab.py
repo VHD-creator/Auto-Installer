@@ -109,8 +109,8 @@ class InstallTab(ctk.CTkFrame):
         # Gán lmargin2 (thụt lề cho các dòng rớt xuống) bằng đúng mốc tab2_px
         self.log_textbox._textbox.tag_config("log_wrap", lmargin2=tab2_px)
 
-        if self.load_app_list():
-            self.log({"status": "INFO", "msg": "Đã tải danh sách ứng dụng từ config.json thành công."})
+        # Sử dụng sự kiện <Map> để nạp app khi widget thực sự hiển thị trên màn hình
+        self.bind("<Map>", lambda e: self.after(50, self.load_app_list))
 
     def log(self, msg):
         self.after(0, lambda: self._log(msg))
@@ -171,14 +171,18 @@ class InstallTab(ctk.CTkFrame):
         self.log_textbox.configure(state="disabled")
 
     def load_app_list(self):
-        # Ép ứng dụng cập nhật kích thước thực tế của khung hình trước khi tính toán grid
-        self.update_idletasks()
+        # Không nạp lại nếu đang trong quá trình cài đặt để tránh làm gián đoạn tiến trình
+        if self.is_installing:
+            return
+            
+        # Ép ứng dụng cập nhật kích thước thực tế
+        self.update()
         
-        # Xóa các card cũ trong scroll_frame
+        # Xóa các card cũ
         for widget in self.scroll_frame.winfo_children():
             widget.destroy()
         
-        # Thêm một chút delay nhỏ để CustomTkinter có thời gian dọn dẹp widget cũ
+        # Thêm một chút delay để UI dọn dẹp
         self.after(10)
             
         try:
@@ -200,13 +204,14 @@ class InstallTab(ctk.CTkFrame):
                 # Load icon thông qua AssetManager sử dụng tên file trong config
                 app_icon = AssetManager.get_app_icon(icon_name)
                 
-                # Tạo card trực tiếp trong scroll_frame
+                # Tạo card với chiều rộng đề xuất để grid chia cột chuẩn hơn
                 card = AppCard(
                     self.scroll_frame, 
                     name=name, 
                     description=description, 
                     app_icon=app_icon,
-                    command=self.update_select_all_btn
+                    command=self.update_select_all_btn,
+                    width=280 # Đảm bảo 3 cột trên màn hình 1100px
                 )
                 
                 r = i // columns
@@ -216,8 +221,23 @@ class InstallTab(ctk.CTkFrame):
                 self.vars.append({"exe": exe, "name": name, "card": card})
                 
             self.update_select_all_btn()
-            # Cập nhật lại giao diện để scrollbar xuất hiện đúng
-            self.after(100, self.update_idletasks)
+            
+            # Cập nhật lại giao diện, ép thanh cuộn tính toán lại vùng chứa
+            def _refresh_geometry():
+                try:
+                    self.scroll_frame.update()
+                    # Phát sự kiện Configure giả để Canvas cập nhật scrollregion
+                    self.scroll_frame._parent_canvas.event_generate("<Configure>")
+                    # Đưa về đầu trang
+                    self.scroll_frame._parent_canvas.yview_moveto(0)
+                    
+                    # Chỉ báo log một lần duy nhất khi khởi động hoặc nạp app đầu tiên
+                    if not hasattr(self, "_first_log_done"):
+                        self.log({"status": "INFO", "msg": "Đã tải danh sách ứng dụng từ config.json thành công."})
+                        self._first_log_done = True
+                except: pass
+
+            self.after(100, _refresh_geometry)
             return True
         except Exception as e:
             self.log({"status": "ERROR", "msg": f"Lỗi nạp cấu hình: {e}"})
@@ -299,6 +319,7 @@ class InstallTab(ctk.CTkFrame):
                 self.is_installing = False
                 self.set_interaction_state(True)
                 self.deselect_all()
+                self.load_app_list()
             self.after(0, _finish)
 
         run_installation(checked, self.log, on_progress, on_complete)

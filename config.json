@@ -63,6 +63,24 @@
             "description": "",
             "exe": "SteamSetup.exe",
             "type": "Install"
+        },
+        {
+            "name": "Ultraview",
+            "description": "",
+            "exe": "UltraViewer.exe",
+            "type": "Install"
+        },
+        {
+            "name": "Telegram",
+            "description": "",
+            "exe": "tsetup-x64.6.4.1.exe",
+            "type": "Install"
+        },
+        {
+            "name": "Zalo",
+            "description": "",
+            "exe": "ZaloSetup-25.8.3.exe",
+            "type": "Install"
         }
     ]
 }

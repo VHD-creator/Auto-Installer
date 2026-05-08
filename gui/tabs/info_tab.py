@@ -10,30 +10,24 @@ class InfoTab(ctk.CTkFrame):
 
         about_text = """
 Auto Install Tool là giải pháp hàng đầu hỗ trợ cài đặt ứng dụng hàng loạt một cách nhanh chóng, chính xác và hoàn toàn tự động. 
-Phiên bản 2.4.0 (CustomTkinter Edition) là một bước nhảy vọt về công nghệ, mang đến trải nghiệm cài đặt "một chạm" đỉnh cao cho cả người dùng cá nhân và kỹ thuật viên chuyên nghiệp.
+Phiên bản 2.5.0 (Intelligence Edition) là một bước nhảy vọt về công nghệ, mang đến trải nghiệm cài đặt "không chạm" đỉnh cao.
 
-🌟 CÁC TÍNH NĂNG MỚI NỔI BẬT TRÊN V2.4:
+🌟 CÁC TÍNH NĂNG ĐỘT PHÁ TRÊN V2.5.0:
 
-🚀 HỆ THỐNG NHẬN DIỆN "ULTRA-SMART":
-Tự động trích xuất Metadata và ProductCode từ lõi file .exe, .msi để đưa ra tham số cài đặt Silent (im lặng) với độ chính xác tuyệt đối.
+🚀 SIÊU NHẬN DIỆN "SMART-HUNTING":
+Tự động dò tìm flag silent (/S, /silent, /qn) ngay trong mã máy của hơn 50 loại engine cài đặt phổ biến nhất thế giới (Inno, NSIS, MSI, InstallShield...).
 
-🔍 CÔNG NGHỆ "DEEP SCAN":
-Khả năng nhận diện sâu các bộ cài nén SFX (7-Zip, WinRAR), WiX Burn và các loại Wrapper phức tạp chứa MSI bên trong driver.
+🧠 HỆ THỐNG "HẬU KIỂM" THÔNG MINH:
+Xác thực thực tế qua Registry sau mỗi lần cài đặt. Nếu tiến trình bị hủy ngang, hệ thống sẽ nhận biết và báo chính xác trạng thái ngay lập tức.
 
-🧠 QUẢN LÝ CÀI ĐẶT THÔNG MINH (SMART SKIP):
-Tự động bỏ qua các ứng dụng đã có trên máy bằng thuật toán đối soát Registry và Fuzzy Matching tiên tiến, ngăn chặn tình trạng cài đè lãng phí thời gian.
+🔍 QUÉT SÂU 3 LỚP (SMART SKIP):
+Tự động bỏ qua app đã có qua Registry, App Paths và tệp thực thi trên ổ đĩa. Hỗ trợ nhận diện cả các phần mềm Portable (không cần cài đặt).
 
-📂 MỞ RỘNG HỖ TRỢ ĐA ĐỊNH DẠNG:
-Hỗ trợ thực thi script .bat, .cmd và tự động mount đĩa ảo cho file .iso, .img chỉ với một cú click chuột.
+🛡️ CÔNG NGHỆ BẢO MẬT ĐA TẦNG:
+Xử lý an toàn mọi đường dẫn file phức tạp qua mã hóa Base64, đảm bảo tiến trình cài đặt luôn thông suốt và chính xác tuyệt đối.
 
-🎨 TỐI ƯU HÓA TRẢI NGHIỆM (UX/UI):
-Giao diện hiện đại, hệ thống Log tiếng Việt thời gian thực hiển thị minh bạch mọi tiến trình và tham số cài đặt.
-
-⚡ HIỆU NĂNG VÀ BẢO MẬT:
-Xử lý đa luồng (Multithreading) giúp ứng dụng luôn mượt mà. Cơ chế ngăn chặn đa tiến trình và kiểm tra quyền Admin đảm bảo môi trường cài đặt an toàn nhất.
-
-🧹 QUẢN LÝ DỮ LIỆU SẠCH:
-Tự động dọn dẹp rác dữ liệu và tối ưu hóa file cấu hình khi thay đổi danh sách ứng dụng.
+🎨 GIAO DIỆN HIỆN ĐẠI & MƯỢT MÀ:
+Trải nghiệm đỉnh cao với CustomTkinter, hệ thống Log đa sắc thái và quản lý Icon chuyên nghiệp không làm khóa file hệ thống.
 
 Tác giả: Phạm Sự
 Cảm ơn bạn đã tin tưởng và sử dụng sản phẩm!

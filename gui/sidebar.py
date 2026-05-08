@@ -36,7 +36,7 @@ class Sidebar(ctk.CTkFrame):
         footer_frame = ctk.CTkFrame(self, fg_color="transparent")
         footer_frame.pack(side="bottom", padx=25, pady=25, fill="x")
         
-        ctk.CTkLabel(footer_frame, image=icon_version, text="  Version 2.4.0", compound="left", font=Styles.FONT_DESC, text_color=Styles.TEXT_SECONDARY, anchor="w").pack(fill="x")
+        ctk.CTkLabel(footer_frame, image=icon_version, text="  Version 2.5.0", compound="left", font=Styles.FONT_DESC, text_color=Styles.TEXT_SECONDARY, anchor="w").pack(fill="x")
         ctk.CTkLabel(footer_frame, text="© 2026 Phạm Sự", font=Styles.FONT_DESC, text_color=Styles.TEXT_SECONDARY, anchor="w").pack(fill="x")
         ctk.CTkLabel(footer_frame, text="All rights reserved", font=Styles.FONT_DESC, text_color=Styles.TEXT_SECONDARY, anchor="w").pack(fill="x")
 
