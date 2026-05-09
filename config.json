@@ -81,6 +81,30 @@
             "description": "",
             "exe": "ZaloSetup-25.8.3.exe",
             "type": "Install"
+        },
+        {
+            "name": "O365_Project",
+            "description": "",
+            "exe": "O365_PROJECT.exe",
+            "type": "Install"
+        },
+        {
+            "name": "Visio",
+            "description": "",
+            "exe": "O365_VISIO.exe",
+            "type": "Install"
+        },
+        {
+            "name": "O365_Offline_full",
+            "description": "",
+            "exe": "O365_BusinessRetail.img",
+            "type": "Install"
+        },
+        {
+            "name": "adobe2020",
+            "description": "",
+            "exe": "Adobe.Master.Collection.2020.v12.RU-EN.iso",
+            "type": "Install"
         }
     ]
 }

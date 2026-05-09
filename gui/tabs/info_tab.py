@@ -10,24 +10,27 @@ class InfoTab(ctk.CTkFrame):
 
         about_text = """
 Auto Install Tool là giải pháp hàng đầu hỗ trợ cài đặt ứng dụng hàng loạt một cách nhanh chóng, chính xác và hoàn toàn tự động. 
-Phiên bản 2.5.0 (Intelligence Edition) là một bước nhảy vọt về công nghệ, mang đến trải nghiệm cài đặt "không chạm" đỉnh cao.
+Phiên bản 2.6.0 (Evolution Edition) là một cuộc cách mạng về kiến trúc, mang đến sự ổn định tuyệt đối và khả năng tùy biến vô hạn.
 
-🌟 CÁC TÍNH NĂNG ĐỘT PHÁ TRÊN V2.5.0:
+🌟 NHỮNG CẢI TIẾN ĐỘT PHÁ TRÊN PHIÊN BẢN MỚI:
 
-🚀 SIÊU NHẬN DIỆN "SMART-HUNTING":
-Tự động dò tìm flag silent (/S, /silent, /qn) ngay trong mã máy của hơn 50 loại engine cài đặt phổ biến nhất thế giới (Inno, NSIS, MSI, InstallShield...).
+• KIẾN TRÚC OOP & FACTORY PATTERN:
+Toàn bộ lõi được tái cấu trúc theo mô hình hướng đối tượng (OOP), giúp xử lý các kịch bản cài đặt phức tạp một cách mượt mà và chính xác hơn bao giờ hết.
 
-🧠 HỆ THỐNG "HẬU KIỂM" THÔNG MINH:
-Xác thực thực tế qua Registry sau mỗi lần cài đặt. Nếu tiến trình bị hủy ngang, hệ thống sẽ nhận biết và báo chính xác trạng thái ngay lập tức.
+• HỖ TRỢ ĐA DẠNG ĐỊNH DẠNG (ALL-IN-ONE):
+Không chỉ dừng lại ở EXE/MSI, hệ thống hiện đã hỗ trợ đầy đủ các gói ISO/IMG, bộ cài Office (ODT) và các script tự động (PowerShell, Batch).
 
-🔍 QUÉT SÂU 3 LỚP (SMART SKIP):
-Tự động bỏ qua app đã có qua Registry, App Paths và tệp thực thi trên ổ đĩa. Hỗ trợ nhận diện cả các phần mềm Portable (không cần cài đặt).
+• QUY TRÌNH MOUNT & WAIT THÔNG MINH:
+Tự động nạp (mount) ổ đĩa ảo cho các bộ cài offline, thông minh nhận diện và chờ đợi quá trình cài đặt thủ công (như Office) trước khi tự động dọn dẹp hệ thống.
 
-🛡️ CÔNG NGHỆ BẢO MẬT ĐA TẦNG:
-Xử lý an toàn mọi đường dẫn file phức tạp qua mã hóa Base64, đảm bảo tiến trình cài đặt luôn thông suốt và chính xác tuyệt đối.
+• HỆ THỐNG SMART-SKIP 2.0:
+Nâng cấp khả năng nhận diện phần mềm đã cài đặt qua 3 tầng bảo mật: Registry sâu, App Paths và Chữ ký tệp trên đĩa, loại bỏ hoàn toàn việc cài đè trùng lặp.
 
-🎨 GIAO DIỆN HIỆN ĐẠI & MƯỢT MÀ:
-Trải nghiệm đỉnh cao với CustomTkinter, hệ thống Log đa sắc thái và quản lý Icon chuyên nghiệp không làm khóa file hệ thống.
+• THI THI ĐA LUỒNG & BẢO MẬT:
+Tích hợp mã hóa Base64 cho câu lệnh và hệ thống xử lý tiến trình chạy ẩn (Silent) thế hệ mới, đảm bảo 100% không gây lỗi đường dẫn hay xung đột hệ thống.
+
+• TRẢI NGHIỆM NGƯỜI DÙNG TỐI ƯU:
+Giao diện hiển thị Log thời gian thực, quản lý Icon thông minh và cơ chế "Hậu kiểm" (Global Verification) để đảm bảo mọi ứng dụng đều được cài đặt thành công.
 
 Tác giả: Phạm Sự
 Cảm ơn bạn đã tin tưởng và sử dụng sản phẩm!

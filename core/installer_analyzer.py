@@ -384,17 +384,21 @@ def get_script_info(filepath):
     return ""
 
 def get_xml_info(filepath):
-    """Trích xuất thông tin từ file cấu hình XML (vd: Office 365)."""
+    """Trích xuất thông tin từ file cấu hình XML (vd: Office 365, Visio, Project)."""
     try:
         with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
             content = f.read()
             # Tìm Product ID trong Office XML
             match = re.search(r'Product ID="(.*?)"', content)
             if match:
-                pid = match.group(1)
-                if "O365" in pid: return "Microsoft Office 365"
-                if "ProPlus" in pid: return "Microsoft Office ProPlus"
-                return pid
+                pid = match.group(1).lower()
+                if "o365" in pid: return "Microsoft Office 365"
+                if "proplus" in pid: return "Microsoft Office ProPlus"
+                if "visio" in pid: return "Microsoft Visio"
+                if "project" in pid: return "Microsoft Project"
+                if "word" in pid: return "Microsoft Word"
+                if "excel" in pid: return "Microsoft Excel"
+                return pid.title()
     except:
         pass
     return ""
