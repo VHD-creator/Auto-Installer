@@ -1,0 +1,336 @@
+/* ===== Global ===== */
+QMainWindow {
+    background-color: #0d1117;
+    font-family: "Segoe UI", "Arial", sans-serif;
+    font-size: 10pt;
+}
+QLabel {
+    color: #c9d1d9;
+    font-size: 10pt;
+}
+
+/* ===== Header ===== */
+#header {
+    
+}
+#header-title {
+    color: #f0f6fc;
+    font-family: "Segoe UI", "Arial", sans-serif;
+    font-size: 12pt;
+    font-weight: bold;
+    padding-left: 8px;
+}
+#page-title {
+    color: #f0f6fc;
+    font-family: "Segoe UI", "Arial", sans-serif;
+    font-size: 18pt;
+    font-weight: bold;
+    padding-left: 8px;
+    padding-bottom: 8px;
+}
+
+
+/* ===== Sidebar ===== */
+#sidebar {
+    background-color: #161b22;
+    border-right: 1px solid #30363d;
+}
+#sidebar QPushButton {
+    background-color: transparent;
+    color: #c9d1d9;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 20px;
+    font-family: "Segoe UI", "Arial", sans-serif;
+    font-size: 12pt;
+    font-weight: bold;
+    text-align: left;
+    margin: 2px 8px;
+}
+#sidebar QPushButton:hover {
+    background-color: #21262d;
+    color: #f0f6fc;
+}
+#sidebar QPushButton:pressed {
+    background-color: #30363d;
+}
+/* Active/selected state for menu items */
+#sidebar QPushButton[active="true"] {
+    background-color: #547A95;
+    color: #f0f6fc;
+    border-radius: 6px;
+}
+/* Active/selected state for submenu items */
+#sidebar QPushButton#submenuButton[active="true"] {
+    background-color: #2C3947;
+    color: #f0f6fc;
+    border-radius: 6px;
+}
+#sidebar QLabel {
+    color: #c9d1d9;
+}
+
+/* ===== Pages / Content ===== */
+
+/* -- Search Box -- */
+#search-box {
+    background-color: #0d1117;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-family: "Segoe UI", "Arial", sans-serif;
+    font-size: 10pt;
+    selection-background-color: #1f6feb;
+    selection-color: #f0f6fc;
+}
+#search-box:focus {
+    border-color: #1f6feb;
+    outline: none;
+}
+#search-box::placeholder {
+    color: #484f58;
+}
+
+/* -- Category Selector -- */
+#category-select {
+    background-color: #21262d;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-family: "Segoe UI", "Arial", sans-serif;
+    font-size: 10pt;
+}
+#category-select:hover {
+    border-color: #484f58;
+}
+#category-select::drop-down {
+    border: none;
+    width: 20px;
+}
+#category-select QAbstractItemView {
+    background-color: #161b22;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+    font-family: "Segoe UI", "Arial", sans-serif;
+    font-size: 10pt;
+    selection-background-color: #1f6feb;
+    selection-color: #f0f6fc;
+    outline: none;
+}
+
+/* -- Log Screen -- */
+#log-title {
+    color: #8b949e;
+    font-family: "Segoe UI", "Arial", sans-serif;
+    font-size: 10pt;
+    font-weight: bold;
+    padding: 4px 0;
+}
+#log-area {
+    background-color: #0d1117;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 10px;
+    font-family: "Cascadia Code", "Consolas", "Courier New", monospace;
+    font-size: 10pt;
+    selection-background-color: #1f6feb;
+    selection-color: #f0f6fc;
+}
+
+/* -- Scrollbar (log area & general) -- */
+QScrollBar:vertical {
+    background-color: #0d1117;
+    width: 10px;
+    border: none;
+    border-radius: 5px;
+}
+QPushButton#submenuButton {
+    padding-left: 32px;
+}
+QScrollBar::handle:vertical {
+    background-color: #30363d;
+    border-radius: 5px;
+    min-height: 30px;
+}
+QScrollBar::handle:vertical:hover {
+    background-color: #484f58;
+}
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+    height: 0;
+    border: none;
+}
+QScrollBar:horizontal {
+    background-color: #0d1117;
+    height: 10px;
+    border: none;
+    border-radius: 5px;
+}
+QScrollBar::handle:horizontal {
+    background-color: #30363d;
+    border-radius: 5px;
+    min-width: 30px;
+}
+QScrollBar::handle:horizontal:hover {
+    background-color: #484f58;
+}
+QScrollBar::add-line:horizontal,
+QScrollBar::sub-line:horizontal {
+    width: 0;
+    border: none;
+}
+
+/* ===== Footer (kept for future use) ===== */
+#footer {
+    background-color: #161b22;
+    border-top: 1px solid #30363d;
+}
+#install-btn {
+    background-color: #238636;
+    color: #ffffff;
+    border: 1px solid #2ea043;
+    border-radius: 6px;
+    padding: 8px 20px;
+    font-size: 10pt;
+    font-weight: bold;
+}
+#install-btn:hover {
+    background-color: #2ea043;
+}
+#install-btn:pressed {
+    background-color: #238636;
+}
+#cancel-btn {
+    background-color: #21262d;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 8px 20px;
+    font-size: 10pt;
+    font-weight: bold;
+}
+#cancel-btn:hover {
+    background-color: #30363d;
+    color: #f0f6fc;
+}
+#cancel-btn:pressed {
+    background-color: #21262d;
+}
+
+/* -- Category List -- */
+#category-list {
+    background-color: #0d1117;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 8px;
+    font-size: 11pt;
+    outline: none;
+}
+#category-list::item {
+    background-color: #161b22;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    padding: 12px;
+}
+#category-list::item:hover {
+    background-color: #21262d;
+    border-color: #484f58;
+}
+#category-list::item:selected {
+    background-color: #253447;
+    color: #f0f6fc;
+    border-color: #3b5372;
+}
+#category-list::indicator {
+    width: 18px;
+    height: 18px;
+    border: 1px solid #30363d;
+    border-radius: 4px;
+    background-color: #0d1117;
+    margin-right: 8px;
+}
+#category-list::indicator:checked {
+    background-color: #315a8c;
+    border-color: #315a8c;
+    image: url(assets/check.svg);
+}
+
+/* -- Add Button -- */
+#add-category-btn {
+    background-color: #275282;
+    color: #ffffff;
+    border: 1px solid #336399;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-size: 10pt;
+    font-weight: bold;
+}
+#add-category-btn:hover {
+    background-color: #336399;
+}
+#add-category-btn:pressed {
+    background-color: #1e426b;
+}
+
+/* -- Delete Button -- */
+#delete-btn {
+    background-color: #8f2c2a;
+    color: #ffffff;
+    border: 1px solid #a13432;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-size: 10pt;
+    font-weight: bold;
+}
+#delete-btn:hover {
+    background-color: #a13432;
+}
+#delete-btn:pressed {
+    background-color: #752220;
+}
+
+
+/* -- Category Management Grid -- */
+#category-scroll-area {
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    background-color: #0d1117;
+}
+#scroll-content {
+    background-color: transparent;
+}
+#category-card {
+    background-color: #161b22;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+}
+#category-card:hover {
+    background-color: #21262d;
+    border-color: #484f58;
+}
+#category-card[selected="true"] {
+    background-color: #253447;
+    border-color: #3b5372;
+}
+#category-card-name {
+    font-size: 11pt;
+    font-weight: bold;
+    color: #f0f6fc;
+    border: none;
+    background: transparent;
+    padding: 4px;
+}
+#category-card-id {
+    font-size: 9pt;
+    color: #8b949e;
+    border: none;
+    background: transparent;
+    padding: 4px;
+}

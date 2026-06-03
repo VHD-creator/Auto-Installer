@@ -1,0 +1,2 @@
+Đây là file chính chứa các thành phần UI, có thể thiết kế hệ thống file structure tùy ý
+tuy nhiên tránh lồng nhau quá nhiều, các mục sẽ dễ bị rối và khó kiểm soát codebase

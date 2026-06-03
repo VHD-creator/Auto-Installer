@@ -1,0 +1,1 @@
+Folder này dùng để chứa các file logic xử lí ứng dụng, không sử dụng để thiết kế layout (UI)
