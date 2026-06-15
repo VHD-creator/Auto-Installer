@@ -1,16 +1,16 @@
 {
-    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
-    "python.analysis.extraPaths": [
-        "${workspaceFolder}",
-        "${workspaceFolder}/.venv/Lib/site-packages"
-    ],
-    "python.analysis.autoSearchPaths": true,
-    "python.analysis.diagnosticMode": "workspace",
     "python.terminal.activateEnvironment": true,
-    "python.terminal.activateEnvInCurrentTerminal": true,
-
+    "python.defaultInterpreterPath": "./.venv/Scripts/activate.ps1",
     "files.exclude": {
-        "**/__pycache__": true,
-        "**/.pytest_cache": true
-    }
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "**/flutter/ephemeral": true,
+        "**/Flutter/ephemeral": true,
+        "**/.symlinks": true,
+        "**/.plugin_symlinks": true,
+        "**/__pycache__": true
+    },
 }
